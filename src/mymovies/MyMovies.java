@@ -14,6 +14,6 @@ public class MyMovies {
         //Steve's contribution to the file
         TestClass steve=new TestClass("Steve");
         JOptionPane.showMessageDialog(null,INITMESSAGE.concat(steve.getName())); 
-        //create your object then put your welcome message to the team below
+        //create your object then put your welcome message to the team here
     } 
 }
