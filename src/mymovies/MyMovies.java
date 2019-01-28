@@ -8,6 +8,7 @@ public class MyMovies {
 
     public static void main(String[] args) {
         // first line of code to test work enviroment
+        //1rst change made
         JOptionPane.showMessageDialog(null, "Hello World, Steve");
     } 
 }
