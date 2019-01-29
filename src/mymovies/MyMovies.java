@@ -10,9 +10,10 @@ public class MyMovies {
         // first line of code to test work enviroment
         //1rst change made
         final String INITMESSAGE="Hello Universe - ";
-        
-        //Steve's contribution to the file111
-        TestClass steve=new TestClass("Peri");
+ 
+        //Steve's contribution to the file1115
+        TestClass steve=new TestClass("Steve");
+      
         JOptionPane.showMessageDialog(null,INITMESSAGE.concat(steve.getName())); 
         //create your object then put your welcome message to the team here
     } 
