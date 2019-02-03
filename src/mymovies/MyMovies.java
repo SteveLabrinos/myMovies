@@ -3,16 +3,24 @@ package mymovies;
  *
  * @author Labrinos
  */
-import javax.swing.JOptionPane;
+import javax.persistence.Persistence;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityManager;
+
 public class MyMovies {
 
     public static void main(String[] args) {
-        // first line of code to test work enviroment
-        //1rst change made
-        final String INITMESSAGE="Hello World";
+        // Creation of Entity Manager Facttory at the start of the program
+        EntityManagerFactory managerFactory=Persistence.createEntityManagerFactory("myMoviesPU");
+        EntityManager em=managerFactory.createEntityManager();
         
-        //Steve's contribution to the file
-        JOptionPane.showMessageDialog(null,INITMESSAGE.concat(", Steve") );
+        //Start of main menu
         
+ 
+      
+        
+        //  Closing Entity Manager at the end of the program
+        em.close();
+        managerFactory.close();
     } 
 }
