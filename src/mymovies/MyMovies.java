@@ -23,4 +23,7 @@ public class MyMovies {
         em.close();
         managerFactory.close();
     } 
+    
+    //test line 
+    //iliana
 }
