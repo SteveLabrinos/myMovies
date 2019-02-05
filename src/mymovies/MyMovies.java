@@ -3,6 +3,7 @@ package mymovies;
  *
  * @author Labrinos
  */
+import model.*;
 import javax.persistence.Persistence;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityManager;
