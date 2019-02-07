@@ -250,12 +250,7 @@ public class MainMenu extends javax.swing.JFrame {
 
     //Μέθοδος τερματισμού εφαρμογής από το πλήκτρο εξόδου
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
-        int choise=JOptionPane.showConfirmDialog(new JFrame(),
-                "Η εφαρμογή θα τερματιστεί.\nΘέλετε να συνεχίσετε;","Προειδοποιητικό Μήνυμα",JOptionPane.YES_NO_OPTION);
-        if(choise==0) {
-            dispose();
-            System.exit(0);
-        }
+        exitMenuItemActionPerformed(evt);
     }//GEN-LAST:event_exitButtonActionPerformed
     
     //Μέθοδος τερματισμού εφαρμογής από την λίστα επιλογών
