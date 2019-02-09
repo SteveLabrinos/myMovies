@@ -32,6 +32,9 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="3. &#x391;&#x3bd;&#x3b1;&#x3b6;&#x3ae;&#x3c4;&#x3b7;&#x3c3;&#x3b7; &#x3a4;&#x3b1;&#x3b9;&#x3bd;&#x3b9;&#x3ce;&#x3bd;"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem3ActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItem4">
               <Properties>

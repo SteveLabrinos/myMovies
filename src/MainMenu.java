@@ -10,6 +10,7 @@
  * @author Labrinos
  */
 import javax.swing.*;
+import mymovies.MoviesSearchForm;
 
 public class MainMenu extends javax.swing.JFrame {
 
@@ -127,6 +128,11 @@ public class MainMenu extends javax.swing.JFrame {
         movieSearchButton.setBackground(new java.awt.Color(204, 255, 255));
         movieSearchButton.setText("<html><span style=\"font-size:15px;\">Αναζήτηση Ταινιών</span></html>");
         movieSearchButton.setToolTipText("Συντόμευση πλήκτρου: F3");
+        movieSearchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                movieSearchButtonActionPerformed(evt);
+            }
+        });
 
         statisticsButton.setBackground(new java.awt.Color(204, 255, 255));
         statisticsButton.setText("<html><span style=\"font-size:15px;\">Στατιστικά</span></html>");
@@ -195,6 +201,11 @@ public class MainMenu extends javax.swing.JFrame {
 
         movieSearchMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F3, 0));
         movieSearchMenuItem.setText("<html><span style=\"font-size:15px;\">3. Αναζήτηση Ταινιών</span></html>");
+        movieSearchMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                movieSearchMenuItemActionPerformed(evt);
+            }
+        });
         jMenu1.add(movieSearchMenuItem);
 
         statisticsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, 0));
@@ -262,6 +273,16 @@ public class MainMenu extends javax.swing.JFrame {
             System.exit(0);
         }
     }//GEN-LAST:event_exitMenuItemActionPerformed
+
+    private void movieSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_movieSearchButtonActionPerformed
+        // TODO add your handling code here:
+        new MoviesSearchForm();
+    }//GEN-LAST:event_movieSearchButtonActionPerformed
+
+    private void movieSearchMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_movieSearchMenuItemActionPerformed
+        // TODO add your handling code here:
+         new MoviesSearchForm();
+    }//GEN-LAST:event_movieSearchMenuItemActionPerformed
 
     /**
      * @param args the command line arguments
