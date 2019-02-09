@@ -12,7 +12,9 @@ package mymovies;
  * @author Labrinos
  */
 import javax.swing.*;
-import mymovies.MoviesSearchForm;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 public class MainMenu extends javax.swing.JFrame {
 
@@ -273,6 +275,9 @@ public class MainMenu extends javax.swing.JFrame {
         if(choise==0) {
             dispose();
             System.exit(0);
+            //  Αποδέσμευση του Entity Manager Factory και του Entity Manager
+            em.close();
+            managerFactory.close();
         }
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
@@ -295,6 +300,10 @@ public class MainMenu extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
+        
+        //Δηλωσή του Entity Manager Factory και του Entity Manager στην αρχή του προγράμματος
+        managerFactory=Persistence.createEntityManagerFactory("myMoviesPU");
+        em=managerFactory.createEntityManager();
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -320,8 +329,13 @@ public class MainMenu extends javax.swing.JFrame {
                 new MainMenu().setVisible(true);
             }
         });
+        
+        
+        
     }
-
+    //Αρχική δήλωση του αντικειμένου Entity Manager για τον χειρισμό των POJOs
+    public static EntityManager em;
+    public static EntityManagerFactory managerFactory;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton exitButton;
     private javax.swing.JMenuItem exitMenuItem;
