@@ -19,6 +19,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Comparator;
 
 /**
  *
@@ -147,5 +148,16 @@ public class Movie implements Serializable {
     public String toString() {
         return "mymovies.Movie[ id=" + id + " ]";
     }
+    
+    //Εισαγωγή Comperator για την ταξινόμηση της λίστας ταινιών στα στατιστικά
+    public static Comparator<Movie> compareMovies=new Comparator<Movie>(){
+        public int compare(Movie m1,Movie m2){
+            //Λόγω φθείνουσας σειράς αλλάζουμε τη σειρά αφαίρεσης των μεταβλητών
+            return m2.getRating().compareTo(m1.getRating());
+        }
+    };
+
+    
+    
     
 }
