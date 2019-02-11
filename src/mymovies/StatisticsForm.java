@@ -5,15 +5,14 @@
  */
 package mymovies;
 
+import model.Movie;
+import model.FavoriteList;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import model.Movie;
-import model.FavoriteList;
 import javax.swing.table.*;
-import java.util.List;
 import javax.swing.*;
-import javax.swing.JOptionPane;
+import java.util.List;
 /**
  *
  * @author Labrinos
@@ -28,16 +27,8 @@ public class StatisticsForm extends javax.swing.JFrame {
     public StatisticsForm(MainMenu parent) {
         this.parent = parent;
         initComponents();
-        //Παραμετροποίηση της καφαλίδας του πίνακα
-        JTableHeader header=moviesTable.getTableHeader();
-        header.setForeground(Color.darkGray);
-        header.setFont(new Font("Tahoma",Font.BOLD,18));
-        ((DefaultTableCellRenderer)header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
-        //Ενεργοποίηση του grid για τισ γραμμές του πίνακα
-        moviesTable.setShowGrid(true);
-        moviesTable.setIntercellSpacing(new Dimension(0, 0));
+        initJTableUI(moviesTable);
     }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -244,6 +235,7 @@ public class StatisticsForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeButtonActionPerformed
+        //Επιστροφή στο αρχικό μενού, θέτοντας το ξανά ενεργό και κλείνοντας την παρούσα φόρμα
         parent.setEnabled(true);
         parent.setVisible(true);
         dispose();
@@ -255,31 +247,18 @@ public class StatisticsForm extends javax.swing.JFrame {
          * όλων των αγαπημένων λιστών
          */
         fLists = MainMenu.em.createNamedQuery("FavoriteList.findAll", FavoriteList.class).getResultList();
-
+        //Δημιουργία του μοντέλου του πίνακα με δύο στήλες και μηδέν γραμμές
+        tableModel = new DefaultTableModel(BEST_MOVIES_FLIST_COLUMNS, 0);
+        //Εφόσον σε μία λίστα αγαπημένων ταινιών δεν έχουν καταχωρηθεί ταινίες, αυτή αγνοείται
         if (!fLists.isEmpty()) {
-            //Δημιουργία του μοντέλου του πίνακα με δύο στήλες και μηδέν γραμμές
-            tableModel = new DefaultTableModel(BEST_MOVIES_FLIST_COLUMNS, 0);
             for (int i = 0; i < fLists.size(); i++) {
                 List<Movie> fListMovies = fLists.get(i).getMovieList();
                 //Εφόσον υπάρχει ταινία καταχωρημένη στην αγαπημένη λίστα
                 if (!fListMovies.isEmpty()) {
-                    Movie maxRatedMovie = fListMovies.get(0);
-                    for (Movie m : fListMovies) {
-                        if (maxRatedMovie.getRating() <= m.getRating()) {
-                            maxRatedMovie = m;
-                        }
-                    }
-                    //Προσθήκη της καλύτερης - 1ης ταινίας της λίστας στο μοντέλο του πίνακα
+                    //Εύρεση και προσθήκη της καλύτερης - 1ης ταινίας της λίστας στο μοντέλο του πίνακα
+                    Movie maxRatedMovie = getMaxRatedMovie(fListMovies);
                     Object[] rowData = {maxRatedMovie.getTitle()};
-
                     tableModel.addRow(rowData);
-                    //Ταξινόμηση κατά φθείνουσα σειρά
-                    //fListMovies.sort(Movie.compareMoviesDesc);
-
-                    //Προσθήκη της καλύτερης - 1ης ταινίας της λίστας στο μοντέλο του πίνακα
-                    //Movie fMovie=fListMovies.get(0);
-                    //Object[] rowData={fMovie.getTitle()};
-                    //tableModel.addRow(rowData);
                 }
             }
             if (tableModel.getRowCount() > 0) {
@@ -307,7 +286,6 @@ public class StatisticsForm extends javax.swing.JFrame {
          * Δημιουργία ενός List από NamedQuery για την ανάκτηση
          * στοιχείων των 10 καλύτερων ταινιών
          */
-        
         movies = MainMenu.em.createNamedQuery("Movie.findAll", Movie.class).getResultList();
 
         //Ορισμός 10 γραμμών κατά μέγιστο για το μοντέλο του πίνακα
@@ -329,7 +307,6 @@ public class StatisticsForm extends javax.swing.JFrame {
         setCellsAlignment(moviesTable, SwingConstants.CENTER);
         
     }//GEN-LAST:event_bestMoviesButtonActionPerformed
-
      public static void setCellsAlignment(JTable table, int alignment){
         //Ορισμός νέου Renderer για τη στοίχιση των περιεχομένων του πίνακα
         DefaultTableCellRenderer newRenderer = new DefaultTableCellRenderer();
@@ -340,8 +317,27 @@ public class StatisticsForm extends javax.swing.JFrame {
         for (int i = 0;i<tableModel.getColumnCount();i++){
             table.getColumnModel().getColumn(i).setCellRenderer(newRenderer);
         }
-    }   
-
+    }  
+     //Μέθοδος αρχικοποίησης UI πίνακα
+     private static void initJTableUI(JTable table){
+        //Παραμετροποίηση της καφαλίδας του πίνακα
+        JTableHeader header=table.getTableHeader();
+        header.setForeground(Color.darkGray);
+        header.setFont(new Font("Tahoma",Font.BOLD,18));
+        ((DefaultTableCellRenderer)header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+        //Ενεργοποίηση του grid για τις γραμμές του πίνακα
+        table.setShowGrid(true);
+        table.setIntercellSpacing(new Dimension(0, 0));
+    }
+     private static Movie getMaxRatedMovie(List<Movie> movie){
+        Movie maxRatedMovie = movie.get(0);
+           for (Movie m : movie) {
+           if (maxRatedMovie.getRating() <= m.getRating()) {
+               maxRatedMovie = m;
+           }  
+        }
+        return maxRatedMovie;
+     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bestMoviesButton;
     private javax.swing.JPanel bodyPanel;
