@@ -19,6 +19,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Comparator;
 
 /**
  *
@@ -36,7 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     , @NamedQuery(name = "Movie.findByOverview", query = "SELECT m FROM Movie m WHERE m.overview = :overview")
     , @NamedQuery(name = "Movie.findByGenreAndYear", query = "SELECT m FROM Movie m WHERE m.genreId.id =:genre_id "
             + "and FUNC('YEAR',m.releaseDate) =:year")})
-public class Movie implements Serializable {
+public class Movie implements Serializable{
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -148,4 +149,12 @@ public class Movie implements Serializable {
         return "mymovies.Movie[ id=" + id + " ]";
     }
     
+    //Εισαγωγή Comperator για την ταξινόμηση της λίστας ταινιών στα στατιστικά
+    public static Comparator<Movie> compareMoviesDesc=new Comparator<Movie>(){
+        @Override
+        public int compare(Movie m1,Movie m2){
+            //Λόγω φθείνουσας σειράς αλλάζουμε τη σειρά αφαίρεσης των μεταβλητών
+            return m2.getRating().compareTo(m1.getRating());
+        }
+    };     
 }

@@ -8,7 +8,7 @@ import model.Movie;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import model.FavoriteList;
-import static mymovies.MyMovies.em;
+
 
 
 /**
