@@ -18,7 +18,6 @@ import java.util.List;
  * @author Labrinos
  */
 public class StatisticsForm extends javax.swing.JFrame {
-
     /**
      * Creates new form MainMenu
      *
