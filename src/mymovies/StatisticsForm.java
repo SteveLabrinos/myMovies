@@ -306,13 +306,14 @@ public class StatisticsForm extends javax.swing.JFrame {
         setCellsAlignment(moviesTable, SwingConstants.CENTER);
         
     }//GEN-LAST:event_bestMoviesButtonActionPerformed
+     //Μέθοδος στοίχισης δεδομένων του πίνακα στο επιθυμητό σημείο
      public static void setCellsAlignment(JTable table, int alignment){
         //Ορισμός νέου Renderer για τη στοίχιση των περιεχομένων του πίνακα
         DefaultTableCellRenderer newRenderer = new DefaultTableCellRenderer();
         newRenderer.setHorizontalAlignment(alignment);
 
         TableModel tableModel = table.getModel();
-        //Επανάληψη στοίχησης για όλες τις στήλες του πίνακα
+        //Επανάληψη στοίχισης για όλες τις στήλες του πίνακα
         for (int i = 0;i<tableModel.getColumnCount();i++){
             table.getColumnModel().getColumn(i).setCellRenderer(newRenderer);
         }

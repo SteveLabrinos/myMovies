@@ -20,7 +20,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Comparator;
-
 /**
  *
  * @author Labrinos
@@ -36,7 +35,7 @@ import java.util.Comparator;
     , @NamedQuery(name = "Movie.findByRating", query = "SELECT m FROM Movie m WHERE m.rating = :rating")
     , @NamedQuery(name = "Movie.findByOverview", query = "SELECT m FROM Movie m WHERE m.overview = :overview")
     , @NamedQuery(name = "Movie.findByGenreAndYear", query = "SELECT m FROM Movie m WHERE m.genreId.id =:genre_id "
-            + "and FUNC('YEAR',m.releaseDate) =:year")})
+            + "and FUNC('YEAR',m.releaseDate) >=:year")})
 public class Movie implements Serializable{
 
     private static final long serialVersionUID = 1L;
@@ -44,7 +43,7 @@ public class Movie implements Serializable{
     @Basic(optional = false)
     @Column(name = "ID")
     private Integer id;
-    @Column(name = "TITLE")
+    @Column(name = "TITLE", length = 100)
     private String title;
     @Column(name = "RELEASE_DATE")
     @Temporal(TemporalType.DATE)
@@ -52,7 +51,7 @@ public class Movie implements Serializable{
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "RATING")
     private Double rating;
-    @Column(name = "OVERVIEW")
+    @Column(name = "OVERVIEW", length = 500)
     private String overview;
     @JoinColumn(name = "FAVORITE_LIST_ID", referencedColumnName = "ID")
     @ManyToOne
