@@ -6,27 +6,26 @@
 package mymovies;
 
 import model.Movie;
+import model.FavoriteList;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
+import javax.swing.JOptionPane;
 /**
  *
  * @author Labrinos
  */
 public class StatisticsForm extends javax.swing.JFrame {
-    
+
     /**
      * Creates new form MainMenu
+     *
      * @param parent
      */
     public StatisticsForm(MainMenu parent) {
-        this.parent=parent;
+        this.parent = parent;
         initComponents();
-        
-        //Σύνδεση του πίνακα moviesTable με το μοντέλο
-        //tableModel=new DefaultTableModel();
-        //moviesTable.setModel(tableModel);
     }
-  
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -233,63 +232,79 @@ public class StatisticsForm extends javax.swing.JFrame {
 
     private void fListMoviesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fListMoviesButtonActionPerformed
         /*
-         * Δημιουργία ενός ArrayList από NamedQuery για την ανάκτηση
-         * όλων των ταινιών
-        */
-        movies=MainMenu.em.createNamedQuery("Movie.findAll", Movie.class).getResultList();
-        //Εξαίρεση όσων ταινιών δεν ανήκουν σε αγαπημένη λίστα
-        for(int i=0;i<movies.size();i++){
-            if(movies.get(i).getFavoriteListId()==null)
-                movies.remove(i);
+         * Δημιουργία ενός List από NamedQuery για την ανάκτηση
+         * όλων των αγαπημένων λιστών
+         */
+        fLists = MainMenu.em.createNamedQuery("FavoriteList.findAll", FavoriteList.class).getResultList();
+
+        if (!fLists.isEmpty()) {
+            //Δημιουργία του μοντέλου του πίνακα με δύο στήλες και μηδέν γραμμές
+            tableModel = new DefaultTableModel(BEST_MOVIES_FLIST_COLUMNS, 0);
+            for (int i = 0; i < fLists.size(); i++) {
+                List<Movie> fListMovies = fLists.get(i).getMovieList();
+                //Εφόσον υπάρχει ταινία καταχωρημένη στην αγαπημένη λίστα
+                if (!fListMovies.isEmpty()) {
+                    Movie maxRatedMovie = fListMovies.get(0);
+                    for (Movie m : fListMovies) {
+                        if (maxRatedMovie.getRating() <= m.getRating()) {
+                            maxRatedMovie = m;
+                        }
+                    }
+                    //Προσθήκη της καλύτερης - 1ης ταινίας της λίστας στο μοντέλο του πίνακα
+                    Object[] rowData = {maxRatedMovie.getTitle()};
+
+                    tableModel.addRow(rowData);
+                    //Ταξινόμηση κατά φθείνουσα σειρά
+                    //fListMovies.sort(Movie.compareMoviesDesc);
+
+                    //Προσθήκη της καλύτερης - 1ης ταινίας της λίστας στο μοντέλο του πίνακα
+                    //Movie fMovie=fListMovies.get(0);
+                    //Object[] rowData={fMovie.getTitle()};
+                    //tableModel.addRow(rowData);
+                }
+            }
+            if (tableModel.getRowCount() > 0) {
+                //Σύνδεση του μοντέλου με τον πίνακα της φόρμας
+                moviesTable.setModel(tableModel);
+            } else {
+                JOptionPane.showMessageDialog(rootPane,
+                        "Δεν υπάρχουν καταχωρημένες ταινίες στις λίστες αγαπημένων."
+                        + "\nΠαρακαλώ επιλέξτε την λειτουργία \"Αναζήτηση Ταινιών\" ώστε να καταχωρήσετε τις ταινίες που θέλετε στις λίστες αγαπημένων ταινιών",
+                        "Σφάλμα", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(rootPane,
+                    "Δεν υπάρχουν καταχωρημένες λίστες αγαπημένων ταινιών στην εφαρμογή."
+                    + "\nΠαρακαλώ επιλέξτε την λειτουργία \"Διαχείριση Λιστών Αγαπημένων Ταινιών\" ώστε να καταχωρήσετε λίστες αγαπημένων ταινιών",
+                    "Σφάλμα", JOptionPane.ERROR_MESSAGE);
         }
-        //Ταξινόμηση των ταινιών κατά φθείνουσα σειρά βαθμολογίας
-        sortDescMoviesList(movies);
-        //Ορισμός 10 γραμμών κατά μέγιστο για το μοντέλο του πίνακα
-        int tableSize=(movies.size()<10)?movies.size():10;
-        //Δημιουργία αντικειμένου τύπου Object με τις τιμές του πίνακα
-        Object[][] tableData=new Object[tableSize][1];
-        for(int i=0;i<tableSize;i++){
-            tableData[i][0]=movies.get(i).getTitle();
-            //tableData[i][1]=movies.get(i).getRating();
-        }
-        tableModel=new DefaultTableModel(tableData,new String[] {"Όνομα Ταινίας"});
-        //Σύνδεση του μοντέλου με τον πίνακα της φόρμας
-        moviesTable.setModel(tableModel);
-        
     }//GEN-LAST:event_fListMoviesButtonActionPerformed
 
     private void bestMoviesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bestMoviesButtonActionPerformed
         /*
          * Δημιουργία ενός List από NamedQuery για την ανάκτηση
          * στοιχείων των 10 καλύτερων ταινιών
-        */
-        movies=MainMenu.em.createNamedQuery("Movie.findAll", Movie.class).getResultList();
-        //Ταξινόμηση των ταινιών κατά φθείνουσα σειρά βαθμολογίας
-        sortDescMoviesList(movies);
+         */
+        movies = MainMenu.em.createNamedQuery("Movie.findAll", Movie.class).getResultList();
+
         //Ορισμός 10 γραμμών κατά μέγιστο για το μοντέλο του πίνακα
-        int tableSize=(movies.size()<MAX_ROWS)?movies.size():MAX_ROWS;
+        int tableSize = (movies.size() < MAX_ROWS) ? movies.size() : MAX_ROWS;
+        //Δημιουργία του μοντέλου του πίνακα με δύο στήλες και μηδέν γραμμές
+        tableModel = new DefaultTableModel(BEST_MOVIES_COLUMNS, 0);
+        //Ταξινόμηση των ταινιών κατά φθείνουσα σειρά βαθμολογίας
+        movies.sort(Movie.compareMoviesDesc);
         //Δημιουργία αντικειμένου τύπου Object με τις τιμές του πίνακα
-        Object[][] tableData=new Object[tableSize][2];
-        for(int i=0;i<tableSize;i++){
-            tableData[i][0]=movies.get(i).getTitle();
-            tableData[i][1]=movies.get(i).getRating();
+        for (int i = 0; i < tableSize; i++) {
+            //Ορισμός του ονόματος και της βαθμολογίας κάθε ταινίας
+            Object[] rowData = {movies.get(i).getTitle(), movies.get(i).getRating()};
+            //Προσθήκη στο μοντέλο του πίνακα
+            tableModel.addRow(rowData);
         }
-        tableModel=new DefaultTableModel(tableData,new String[] {"Όνομα Ταινίας","Βαθμολογία"});
         //Σύνδεση του μοντέλου με τον πίνακα της φόρμας
         moviesTable.setModel(tableModel);
     }//GEN-LAST:event_bestMoviesButtonActionPerformed
-    //Μέθοδος ταξινόμησης των ταινιών κατά φθείνουσα σειρά βαθμολογίας
-    private static void sortDescMoviesList(List<Movie> list){
-        for(int i=0;i<list.size();i++){
-            for(int j=(list.size()-1);j>=i+1;j--){
-                if(list.get(j).getRating()>list.get(j-1).getRating()){
-                    Double temp=list.get(j).getRating();
-                    list.get(j).setRating(list.get(j-1).getRating());
-                    list.get(j-1).setRating(temp);
-                }
-            }
-        }
-    }
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bestMoviesButton;
     private javax.swing.JPanel bodyPanel;
@@ -305,9 +320,12 @@ public class StatisticsForm extends javax.swing.JFrame {
     private javax.swing.JTable moviesTable;
     // End of variables declaration//GEN-END:variables
     //Δήλωση της αρχικής φόρμας ως γονέα για την επιστροφή σε αυτή
-    private MainMenu parent;
+    private final MainMenu parent;
     //Δήλωση του μοντέλου πίνακα για την συμπλήρωση δεδομένων
     private DefaultTableModel tableModel;
     private List<Movie> movies;
-    static final int MAX_ROWS=10;
+    private List<FavoriteList> fLists;
+    private final int MAX_ROWS = 10;
+    private final String[] BEST_MOVIES_COLUMNS = {"Όνομα Ταινίας", "Βαθμολογία"};
+    private final String[] BEST_MOVIES_FLIST_COLUMNS = {"Όνομα Ταινίας"};
 }

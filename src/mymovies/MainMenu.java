@@ -15,6 +15,8 @@ import javax.swing.*;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.NoResultException;
+import model.*;
 
 public class MainMenu extends javax.swing.JFrame {
 
@@ -307,10 +309,17 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_movieSearchMenuItemActionPerformed
 
     private void statisticsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statisticsButtonActionPerformed
-        newStatisticsForm=new StatisticsForm(this);
-        newStatisticsForm.setVisible(true);
-        
-        setEnabled(false);
+        //Έλεγος για την ύπαρξη έστω μιας ταινιας στη ΒΔ πριν την φόρτωση της φόρμας στατιστικών
+        try{
+            Movie movie=(Movie)em.createNamedQuery("Movie.findAll").setMaxResults(1).getSingleResult();
+            newStatisticsForm=new StatisticsForm(this);
+            newStatisticsForm.setVisible(true);
+            setEnabled(false);
+        }catch(NoResultException e){
+            JOptionPane.showMessageDialog(rootPane, 
+                    "Δεν υπάρχουν ταινίες καταχωρημένες στην εφαρμογή.\nΠαρακαλώ επιλέξτε την λειτουργία \"Ανάκτηση και Αποθήκευση Δεδομένων Ταινιών\"",
+                    "Σφάλμα",JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_statisticsButtonActionPerformed
 
     private void statisticsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statisticsMenuItemActionPerformed
