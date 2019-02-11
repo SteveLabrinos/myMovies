@@ -315,6 +315,7 @@ public class MainMenu extends javax.swing.JFrame {
             newStatisticsForm=new StatisticsForm(this);
             newStatisticsForm.setVisible(true);
             setEnabled(false);
+            setVisible(false);
         }catch(NoResultException e){
             JOptionPane.showMessageDialog(rootPane, 
                     "Δεν υπάρχουν ταινίες καταχωρημένες στην εφαρμογή.\nΠαρακαλώ επιλέξτε την λειτουργία \"Ανάκτηση και Αποθήκευση Δεδομένων Ταινιών\"",

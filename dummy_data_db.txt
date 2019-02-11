@@ -26,6 +26,9 @@ values(12,'Movie 12',9.6,3);
 insert into movie (id,title,rating,favorite_list_id)
 values(13,'Movie 13',2.8,null);
 
+--Delete date from table movie
+delete from movie;
+
 --insert random values into favorite_list
 insert into favorite_list(name)
 values('List 1');
@@ -34,8 +37,9 @@ values('List 2');
 insert into favorite_list(name)
 values('List 3');
 
---Delete table movie
-delete from movie;
+--Delete table from table favorite_list
+delete from favorite_list
+
 
 --select best movie per list query
 select m.title,m.rating

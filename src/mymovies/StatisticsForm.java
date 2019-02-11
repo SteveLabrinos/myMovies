@@ -5,10 +5,13 @@
  */
 package mymovies;
 
+import java.awt.Color;
+import java.awt.Font;
 import model.Movie;
 import model.FavoriteList;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
 import java.util.List;
+import javax.swing.*;
 import javax.swing.JOptionPane;
 /**
  *
@@ -24,6 +27,11 @@ public class StatisticsForm extends javax.swing.JFrame {
     public StatisticsForm(MainMenu parent) {
         this.parent = parent;
         initComponents();
+        //Παραμετροποίηση της καφαλίδας του πίνακα
+        JTableHeader header=moviesTable.getTableHeader();
+        header.setForeground(Color.darkGray);
+        header.setFont(new Font("Tahoma",Font.BOLD,18));
+        ((DefaultTableCellRenderer)header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER); 
     }
 
     /**
@@ -137,7 +145,10 @@ public class StatisticsForm extends javax.swing.JFrame {
             }
         });
 
-        moviesTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        moviesTable.setAutoCreateRowSorter(true);
+        moviesTable.setBackground(java.awt.SystemColor.control);
+        moviesTable.setBorder(new javax.swing.border.MatteBorder(null));
+        moviesTable.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         moviesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -147,7 +158,7 @@ public class StatisticsForm extends javax.swing.JFrame {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Float.class
+                java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false
@@ -227,6 +238,7 @@ public class StatisticsForm extends javax.swing.JFrame {
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeButtonActionPerformed
         parent.setEnabled(true);
+        parent.setVisible(true);
         dispose();
     }//GEN-LAST:event_homeButtonActionPerformed
 
@@ -266,6 +278,8 @@ public class StatisticsForm extends javax.swing.JFrame {
             if (tableModel.getRowCount() > 0) {
                 //Σύνδεση του μοντέλου με τον πίνακα της φόρμας
                 moviesTable.setModel(tableModel);
+                //Στοίχηση των περιεχομένων του πίνακα στο κέντρο
+                setCellsAlignment(moviesTable, SwingConstants.CENTER);
             } else {
                 JOptionPane.showMessageDialog(rootPane,
                         "Δεν υπάρχουν καταχωρημένες ταινίες στις λίστες αγαπημένων."
@@ -285,6 +299,7 @@ public class StatisticsForm extends javax.swing.JFrame {
          * Δημιουργία ενός List από NamedQuery για την ανάκτηση
          * στοιχείων των 10 καλύτερων ταινιών
          */
+        
         movies = MainMenu.em.createNamedQuery("Movie.findAll", Movie.class).getResultList();
 
         //Ορισμός 10 γραμμών κατά μέγιστο για το μοντέλο του πίνακα
@@ -302,8 +317,22 @@ public class StatisticsForm extends javax.swing.JFrame {
         }
         //Σύνδεση του μοντέλου με τον πίνακα της φόρμας
         moviesTable.setModel(tableModel);
+        //Στοίχηση των περιεχομένων του πίνακα στο κέντρο
+        setCellsAlignment(moviesTable, SwingConstants.CENTER);
+        
     }//GEN-LAST:event_bestMoviesButtonActionPerformed
 
+     public static void setCellsAlignment(JTable table, int alignment){
+        //Ορισμός νέου Renderer για τη στοίχιση των περιεχομένων του πίνακα
+        DefaultTableCellRenderer newRenderer = new DefaultTableCellRenderer();
+        newRenderer.setHorizontalAlignment(alignment);
+
+        TableModel tableModel = table.getModel();
+        //Επανάληψη στοίχησης για όλες τις στήλες του πίνακα
+        for (int i = 0;i<tableModel.getColumnCount();i++){
+            table.getColumnModel().getColumn(i).setCellRenderer(newRenderer);
+        }
+    }   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bestMoviesButton;
