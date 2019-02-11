@@ -6,6 +6,7 @@
 package mymovies;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import model.Movie;
 import model.FavoriteList;
@@ -31,7 +32,10 @@ public class StatisticsForm extends javax.swing.JFrame {
         JTableHeader header=moviesTable.getTableHeader();
         header.setForeground(Color.darkGray);
         header.setFont(new Font("Tahoma",Font.BOLD,18));
-        ((DefaultTableCellRenderer)header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER); 
+        ((DefaultTableCellRenderer)header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+        //Ενεργοποίηση του grid για τισ γραμμές του πίνακα
+        moviesTable.setShowGrid(true);
+        moviesTable.setIntercellSpacing(new Dimension(0, 0));
     }
 
     /**
@@ -87,7 +91,7 @@ public class StatisticsForm extends javax.swing.JFrame {
         infoPanel.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
 
         infoLabel.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        infoLabel.setText("<html>\n<p>\nΜε τη λειτουργία <strong style=\"color:blue\">Στατιστικά</strong> παρέχεται η δυνατότητα προβολής των καλύτερων ταινιών της εφαρμογής. Συγκεκριμένα για την προβολή των αποτελεσμάτων παρέχονται οι παρακάτω επιλογές:\n</p>\n<ol>\n<li>Με την επιλογή του πλήκτρου <strong style=\"color:blue\">Οι Καλύτερες 10 Ταινίες</strong> εμφανίζονται ταξινομημένες σε φθίνουσα σειρά οι δέκα(10) καλύτερες ταινίες της εφαρμογής.</li>\n<li>Με την επιλογή του πλήκτρου <strong style=\"color:blue\">Οι Καλύτερες Ταινίες ανά Λίστα</strong> εμφανίζονται οι τίτλοι της καλύτερης ταινίας από κάθε λίστα που έχετε δημιουργήσει.</li>\n</ol>\n</html>");
+        infoLabel.setText("<html> <p> Με τη λειτουργία <strong style=\"color:blue\">Στατιστικά</strong> παρέχεται η δυνατότητα προβολής των καλύτερων ταινιών της εφαρμογής. Συγκεκριμένα για την προβολή των αποτελεσμάτων παρέχονται οι παρακάτω επιλογές: </p> <ol> <li>Με την επιλογή του πλήκτρου <strong style=\"color:blue\">Οι Καλύτερες 10 Ταινίες</strong> εμφανίζονται ταξινομημένες σε φθίνουσα σειρά οι δέκα(10) καλύτερες ταινίες της εφαρμογής.</li> <li>Με την επιλογή του πλήκτρου <strong style=\"color:blue\">Οι Καλύτερες Ταινίες ανά Λίστα</strong> εμφανίζονται οι τίτλοι της καλύτερης ταινίας από κάθε λίστα που έχετε δημιουργήσει.</li> </ol> </html>");
 
         javax.swing.GroupLayout infoPanelLayout = new javax.swing.GroupLayout(infoPanel);
         infoPanel.setLayout(infoPanelLayout);
@@ -147,7 +151,7 @@ public class StatisticsForm extends javax.swing.JFrame {
 
         moviesTable.setAutoCreateRowSorter(true);
         moviesTable.setBackground(java.awt.SystemColor.control);
-        moviesTable.setBorder(new javax.swing.border.MatteBorder(null));
+        moviesTable.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, java.awt.Color.gray, java.awt.Color.cyan, java.awt.Color.cyan, java.awt.Color.white));
         moviesTable.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         moviesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -173,7 +177,10 @@ public class StatisticsForm extends javax.swing.JFrame {
             }
         });
         moviesTable.setColumnSelectionAllowed(true);
+        moviesTable.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
+        moviesTable.setDragEnabled(true);
         moviesTable.setFillsViewportHeight(true);
+        moviesTable.setGridColor(new java.awt.Color(0, 0, 0));
         jScrollPane2.setViewportView(moviesTable);
         moviesTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
@@ -280,6 +287,7 @@ public class StatisticsForm extends javax.swing.JFrame {
                 moviesTable.setModel(tableModel);
                 //Στοίχηση των περιεχομένων του πίνακα στο κέντρο
                 setCellsAlignment(moviesTable, SwingConstants.CENTER);
+                
             } else {
                 JOptionPane.showMessageDialog(rootPane,
                         "Δεν υπάρχουν καταχωρημένες ταινίες στις λίστες αγαπημένων."
