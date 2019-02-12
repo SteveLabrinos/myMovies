@@ -54,9 +54,6 @@
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[470, 600]"/>
     </Property>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[800, 600]"/>
-    </Property>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -77,8 +74,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="panelHeader" alignment="0" pref="1570" max="32767" attributes="0"/>
-          <Component id="panelMain" pref="1570" max="32767" attributes="0"/>
+          <Component id="panelHeader" alignment="0" pref="1572" max="32767" attributes="0"/>
+          <Component id="panelMain" pref="1572" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="panelBottom" pref="1560" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
