@@ -1,14 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+package mymovies;
 
 
-import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
+
+//import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javax.persistence.Query;
 import javax.swing.JLabel;
@@ -26,7 +22,8 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     /**
      * Creates new form ManipulateFavorites
      */
-    public ManipulateFavorites() {
+    public ManipulateFavorites(MainMenu parent) {
+        this.parent=parent;
         initComponents();
         
         // Initial load of favorites lists
@@ -297,6 +294,8 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         if(dialogResult == JOptionPane.NO_OPTION){
             return;
         }
+        parent.setEnabled(true);
+        parent.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_exitButtonActionPerformed
 
@@ -321,7 +320,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         }
         catch(Exception ex){
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-            LOGGER.log(Level.SEVERE, "Exception occur", ex);
+//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_favListsTableMouseClicked
 
@@ -361,7 +360,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         catch(Exception ex){
             moviesDBConn.getTransaction().rollback();
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-            LOGGER.log(Level.SEVERE, "Exception occur", ex);
+//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
@@ -393,7 +392,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         catch(Exception ex){
             moviesDBConn.getTransaction().rollback();
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-            LOGGER.log(Level.SEVERE, "Exception occur", ex);
+//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_btnChangeActionPerformed
 
@@ -426,7 +425,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         }
         catch(Exception ex){
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-            LOGGER.log(Level.SEVERE, "Exception occur", ex);
+//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_btnCreateActionPerformed
 
@@ -453,4 +452,5 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     private javax.persistence.Query qGetFavLists;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
+    private MainMenu parent;
 }

@@ -156,6 +156,11 @@ public class MainMenu extends javax.swing.JFrame {
         fListButton.setBackground(new java.awt.Color(204, 255, 255));
         fListButton.setText("<html><span style=\"font-size:15px;\">Διαχείριση Λιστών Αγαπημένων Ταινιών</span></html>");
         fListButton.setToolTipText("Συντόμευση πλήκτρου: F2");
+        fListButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fListButtonActionPerformed(evt);
+            }
+        });
 
         movieSearchButton.setBackground(new java.awt.Color(204, 255, 255));
         movieSearchButton.setText("<html><span style=\"font-size:15px;\">Αναζήτηση Ταινιών</span></html>");
@@ -749,8 +754,15 @@ public class MainMenu extends javax.swing.JFrame {
             showMessageDialog(null, "Μπορείται να δοκιμάσετε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //ο χρήστης μπόρει να δοκιμάσει άλλη στιγμή να κάνει ανάκτηση ταινιών
         } //τέλος εναλλακτικής υπόθεσης                        
 
-    //GEN-LAST:event_populateDBButtonActionPerformed
+                                                    
     }//GEN-LAST:event_populateDBButtonActionPerformed
+
+    private void fListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fListButtonActionPerformed
+        newFListForm=new ManipulateFavorites(this);
+        newFListForm.setVisible(true);
+        setEnabled(false);
+        setVisible(false);
+    }//GEN-LAST:event_fListButtonActionPerformed
 
         
     //Μέθοδος διαγραφής στοιχείων πίνακα της ΒΔ
@@ -843,6 +855,7 @@ public class MainMenu extends javax.swing.JFrame {
     //Δήλωση της φόρμμας Statistcs ώστε να μπορεί να την καλέσει
     private StatisticsForm newStatisticsForm;
     private MoviesSearchForm newSearchForm;
+    private ManipulateFavorites newFListForm;
     private final String API_KEY = "711f75b81e3aa097074f8f0d7f069896";
     private final String REGEXP_ESC_CHARS="[\r|\t|\n|\f|\"|'s]";
 }
