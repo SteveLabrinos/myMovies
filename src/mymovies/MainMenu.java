@@ -309,7 +309,7 @@ public class MainMenu extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void fListMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fListMenuItemActionPerformed
-        // TODO add your handling code here:
+        fListButtonActionPerformed(evt);
     }//GEN-LAST:event_fListMenuItemActionPerformed
 
     //Μέθοδος τερματισμού εφαρμογής από το πλήκτρο εξόδου
