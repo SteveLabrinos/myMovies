@@ -92,7 +92,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         headerJLaber.setDisplayedMnemonic('\u03c3');
         headerJLaber.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
         headerJLaber.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        headerJLaber.setText("<html><span style=\"font-size:15px;\">Διαχείριση Λιστών Αγαπημένων Ταινιών</span></html>");
+        headerJLaber.setText("<html><span style=\"font-size:20px;\">Διαχείριση Λιστών Αγαπημένων Ταινιών</span></html>");
         headerJLaber.setToolTipText("Διαχείρiση Λιστών Αγαπημένων Ταινιών");
         headerJLaber.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         headerJLaber.setPreferredSize(new java.awt.Dimension(470, 25));
@@ -108,7 +108,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             .addGroup(panelHeaderLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(headerJLaber, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         panelMain.setPreferredSize(new java.awt.Dimension(470, 206));
@@ -210,7 +210,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         panelBottom.setPreferredSize(new java.awt.Dimension(790, 50));
 
         exitButton.setBackground(new java.awt.Color(204, 255, 255));
-        exitButton.setText("<html><span style=\"font-size:15px;\">Έξοδος</span></html>");
+        exitButton.setText("<html><span style=\"font-size:18px;\">Επιστροφή</span></html>");
         exitButton.setToolTipText("Συντόμευση πλήκτρου: Esc");
         exitButton.setPreferredSize(new java.awt.Dimension(470, 33));
         exitButton.addActionListener(new java.awt.event.ActionListener() {
@@ -293,7 +293,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     }//GEN-LAST:event_formInternalFrameClosed
 
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
-        int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να κλείσετε τη Διαχείριση Λιστών?","ΠΡΟΣΟΧΗ !!!",JOptionPane.YES_NO_OPTION);
+        int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να κλείσετε τη λειτουργία  'Διαχείριση Λιστών Αγαπημένων Ταινιών' ?","ΠΡΟΣΟΧΗ !!!",JOptionPane.YES_NO_OPTION);
         if(dialogResult == JOptionPane.NO_OPTION){
             return;
         }
