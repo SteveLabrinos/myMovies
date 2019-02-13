@@ -1,15 +1,20 @@
 package mymovies;
 
-
-
-//import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
-import java.util.ArrayList;
+import java.awt.Component;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.stream.Collectors;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import model.FavoriteList;
 import model.Movie;
 
@@ -22,30 +27,90 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     /**
      * Creates new form ManipulateFavorites
      */
+    private MainMenu parent;
+    private Query _qGetFavLists;
+    private Query _moviesQuery;
     public ManipulateFavorites(MainMenu parent) {
         this.parent=parent;
         initComponents();
         
-        // Initial load of favorites lists
-        //moviesDBConn.getTransaction().begin();
-        java.util.Collection data = qGetFavLists.getResultList();
-        data.forEach((entity) -> {
-            moviesDBConn.refresh(entity);
-        });
-        lstFavList.clear();
-        lstFavList.addAll(data);
+        populateFavListTable();
+    }
+    
+    private void populateMovieTable(){
+        Object[] moviesCols = new Object[] {"Rating","Overview","Release Date","Title","Id"};
+        DefaultTableModel tm;
         
-        // Empty the movies list in order to fill it when
-        // the user clicks a favorite list
-        moviesList.clear();
+        tm = new DefaultTableModel(moviesCols, 0); 
+        for (Object movie : _moviesQuery.getResultList()) {
+            tm.addRow(new Object[] 
+            {                 
+                ((Movie)movie).getRating(),
+                ((Movie)movie).getOverview(),
+                ((Movie)movie).getReleaseDate(),
+                ((Movie)movie).getTitle(),
+                ((Movie)movie).getId()
+            });
+        }
+        moviesTable.setModel(tm);
         
-        // Center tables headers and row contents
+        // Format Table
+        // Center the column headers
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment( JLabel.CENTER );
+        moviesTable.getTableHeader().setDefaultRenderer(centerRenderer);
+        
+        Enumeration<TableColumn> cen = moviesTable.getColumnModel().getColumns();
+        while (cen.hasMoreElements()) {
+            TableColumn etc = (TableColumn) cen.nextElement();
+            etc.setCellRenderer(centerRenderer);
+        }
+        
+        // Format the date column
+        TableCellRenderer tableCellRenderer = new DefaultTableCellRenderer() {
+            SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy");
+            
+            public Component getTableCellRendererComponent(JTable table, 
+            Object value, boolean isSelected, boolean hasFocus, int row, 
+            int col) { 
+                DefaultTableCellRenderer renderer = 
+                   new DefaultTableCellRenderer(); 
+                Component c = renderer.getTableCellRendererComponent(table, 
+                   value, isSelected, hasFocus, row, col); 
+                String s = ""; 
+                if (col == 2) {                   
+                    if( value instanceof Date) {
+                        s = f.format((Date)value);
+                        value = f.format(value);
+                    }
+                   c = renderer.getTableCellRendererComponent(table, s, 
+                      isSelected, hasFocus, row, col); 
+                   ((JLabel) c).setHorizontalAlignment(SwingConstants.CENTER); 
+                } 
+            return c; 
+            } 
+        };        
+        moviesTable.getColumnModel().getColumn(2).setCellRenderer(tableCellRenderer);
+    }
+    
+    private void populateFavListTable() {
+        // Create Tables
+        Object[] favListCols = new Object[] {"Id","Name"};
+        DefaultTableModel tm;
+        
+        // Load Tables
+        tm = new DefaultTableModel(favListCols, 0); 
+        _qGetFavLists = MainMenu.em.createNamedQuery("FavoriteList.findAll");
+        for (Object lstFav : _qGetFavLists.getResultList()) {
+            tm.addRow(new Object[] {((FavoriteList)lstFav).getId(), ((FavoriteList)lstFav).getName()});
+        }
+        favListsTable.setModel(tm);
+        
+        // Format Tables
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment( JLabel.CENTER );
         favListsTable.getTableHeader().setDefaultRenderer(centerRenderer);
         favListsTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        moviesTable.getColumnModel().getColumn(0).setCellRenderer( centerRenderer );
-        moviesTable.getTableHeader().setDefaultRenderer(centerRenderer); 
     }
 
     /**
@@ -56,13 +121,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
-        moviesDBConn = java.beans.Beans.isDesignTime() ? null : javax.persistence.Persistence.createEntityManagerFactory("myMoviesPU").createEntityManager();
-        qGetFavLists = java.beans.Beans.isDesignTime() ? null : moviesDBConn.createQuery("SELECT f FROM FavoriteList f");
-        lstFavList = java.beans.Beans.isDesignTime() ? java.util.Collections.emptyList() : org.jdesktop.observablecollections.ObservableCollections.observableList(qGetFavLists.getResultList());
-        moviesQuery = java.beans.Beans.isDesignTime() ? null : moviesDBConn.createQuery("SELECT m FROM Movie m");
-        moviesList = java.beans.Beans.isDesignTime() ? java.util.Collections.emptyList() : org.jdesktop.observablecollections.ObservableCollections.observableList(moviesQuery.getResultList());
         panelHeader = new javax.swing.JPanel();
         headerJLaber = new javax.swing.JLabel();
         panelMain = new javax.swing.JPanel();
@@ -78,9 +137,15 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         panelInfo = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
 
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Διαχείριση Λιστών Αγαπημένων Ταινιών");
         setMinimumSize(new java.awt.Dimension(470, 600));
-        setPreferredSize(new java.awt.Dimension(800, 600));
+        setPreferredSize(new java.awt.Dimension(1063, 564));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         panelHeader.setBackground(new java.awt.Color(204, 255, 255));
         panelHeader.setPreferredSize(new java.awt.Dimension(470, 50));
@@ -133,16 +198,6 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             }
         });
 
-        org.jdesktop.swingbinding.JTableBinding jTableBinding = org.jdesktop.swingbinding.SwingBindings.createJTableBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, lstFavList, favListsTable);
-        org.jdesktop.swingbinding.JTableBinding.ColumnBinding columnBinding = jTableBinding.addColumnBinding(org.jdesktop.beansbinding.ELProperty.create("${id}"));
-        columnBinding.setColumnName("Id");
-        columnBinding.setColumnClass(Integer.class);
-        columnBinding = jTableBinding.addColumnBinding(org.jdesktop.beansbinding.ELProperty.create("${name}"));
-        columnBinding.setColumnName("Name");
-        columnBinding.setColumnClass(String.class);
-        bindingGroup.addBinding(jTableBinding);
-        jTableBinding.bind();
-
         favListsTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 favListsTableMouseClicked(evt);
@@ -151,25 +206,6 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         favListsTableScrollPane.setViewportView(favListsTable);
 
         moviesTable.getTableHeader().setReorderingAllowed(false);
-
-        jTableBinding = org.jdesktop.swingbinding.SwingBindings.createJTableBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, moviesList, moviesTable);
-        columnBinding = jTableBinding.addColumnBinding(org.jdesktop.beansbinding.ELProperty.create("${overview}"));
-        columnBinding.setColumnName("Overview");
-        columnBinding.setColumnClass(String.class);
-        columnBinding = jTableBinding.addColumnBinding(org.jdesktop.beansbinding.ELProperty.create("${rating}"));
-        columnBinding.setColumnName("Rating");
-        columnBinding.setColumnClass(Double.class);
-        columnBinding = jTableBinding.addColumnBinding(org.jdesktop.beansbinding.ELProperty.create("${releaseDate}"));
-        columnBinding.setColumnName("Release Date");
-        columnBinding.setColumnClass(java.util.Date.class);
-        columnBinding = jTableBinding.addColumnBinding(org.jdesktop.beansbinding.ELProperty.create("${title}"));
-        columnBinding.setColumnName("Title");
-        columnBinding.setColumnClass(String.class);
-        columnBinding = jTableBinding.addColumnBinding(org.jdesktop.beansbinding.ELProperty.create("${id}"));
-        columnBinding.setColumnName("Id");
-        columnBinding.setColumnClass(Integer.class);
-        bindingGroup.addBinding(jTableBinding);
-        jTableBinding.bind();
         moviesTableScrollPane.setViewportView(moviesTable);
 
         javax.swing.GroupLayout panelMainLayout = new javax.swing.GroupLayout(panelMain);
@@ -258,10 +294,10 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelHeader, javax.swing.GroupLayout.DEFAULT_SIZE, 1570, Short.MAX_VALUE)
-            .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, 1570, Short.MAX_VALUE)
+            .addComponent(panelHeader, javax.swing.GroupLayout.DEFAULT_SIZE, 1572, Short.MAX_VALUE)
+            .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, 1572, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, 1560, Short.MAX_VALUE)
+                .addComponent(panelBottom, javax.swing.GroupLayout.DEFAULT_SIZE, 1562, Short.MAX_VALUE)
                 .addContainerGap())
             .addComponent(panelInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -278,15 +314,12 @@ public class ManipulateFavorites extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        bindingGroup.bind();
-
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
-        moviesDBConn.getTransaction().rollback();
-        moviesDBConn.close();
+        
     }//GEN-LAST:event_formInternalFrameClosed
 
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
@@ -309,62 +342,59 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             btnDelete.setEnabled(favListsTable.getSelectedRows().length >= 1);
 
             // Load movies.
-            Query qGetMoviesOfList = moviesDBConn.createNamedQuery("Movie.findByFavListId");
-            qGetMoviesOfList.setParameter("favlistid", Integer.parseInt(favListsTable.getModel().getValueAt(favListsTable.getSelectedRows()[0], 0).toString()));
-            java.util.Collection data = qGetMoviesOfList.getResultList();
-            data.forEach((entity) -> {
-                moviesDBConn.refresh(entity);
-            });
-            moviesList.clear();
-            moviesList.addAll(data);
+            _moviesQuery = MainMenu.em.createNamedQuery("Movie.findByFavListId");
+            _moviesQuery.setParameter("favlistid", Integer.parseInt(favListsTable.getModel().getValueAt(favListsTable.getSelectedRows()[0], 0).toString()));
+            populateMovieTable();
         }
         catch(Exception ex){
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_favListsTableMouseClicked
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        EntityTransaction tx = MainMenu.em.getTransaction();        
+        
         try {
             int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να διαγραφούν οι επιλεγμένες λίστες?","ΠΡΟΣΟΧΗ !!!",JOptionPane.YES_NO_OPTION);
             if(dialogResult == JOptionPane.NO_OPTION){
                 return;
             }
-            moviesDBConn.getTransaction().begin();
+            tx.begin();
             // Delete selected lists
             int[] selected = favListsTable.getSelectedRows();
-            List<FavoriteList> toRemove = new ArrayList<FavoriteList>(selected.length);
             for (int idx = 0; idx < selected.length; idx++) {
-                FavoriteList f = lstFavList.get(favListsTable.convertRowIndexToModel(selected[idx]));
-                toRemove.add(f);
-                moviesDBConn.remove(f);
-
-                // Disconnect movies that referencing the deleted list
-                List<Movie> moviesToUpdate = moviesList.stream()
-                .filter(m -> m.getFavoriteListId().getId()==f.getId())
-                .collect(Collectors.toList());
+                int listId = Integer.parseInt(favListsTable.getModel().getValueAt(selected[idx], 0).toString());
+ 
+                // Get the current list
+                FavoriteList favList = (FavoriteList)_qGetFavLists.getResultList()
+                    .stream()
+                    .filter(fl -> ((FavoriteList)fl).getId().equals(listId))
+                    .findFirst()
+                    .orElse(null);
+                // Get the list of movies bound to the above list
+                List<Movie> moviesToUpdate = favList.getMovieList();
                 if(moviesToUpdate.size() > 0){
-
-                    moviesToUpdate.stream().map((movie) -> {
-                        movie.setFavoriteListId(null);
-                        return movie;
-                    }).forEachOrdered((movie) -> {
-                        moviesDBConn.persist(movie);
-                    });
+                    for(Movie m : moviesToUpdate){
+                        m.setFavoriteListId(null);
+                        MainMenu.em.persist(m);
+                    }
                 }
+                // Remove the fav list
+                MainMenu.em.remove(favList);
             }
-            moviesList.clear();
-            lstFavList.removeAll(toRemove);
-            moviesDBConn.getTransaction().commit();
+            tx.commit();
+            ((DefaultTableModel)moviesTable.getModel()).setRowCount(0);            
+            populateFavListTable();
         }
         catch(Exception ex){
-            moviesDBConn.getTransaction().rollback();
+            tx.rollback();
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeActionPerformed
+        EntityTransaction tx = MainMenu.em.getTransaction();
+        
         try {
             // Ask for the new name
             String listName = favListsTable.getModel().getValueAt(favListsTable.getSelectedRows()[0], 1).toString();
@@ -376,27 +406,31 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             listName = msgBox.getPreDefMessage();
 
             // Get a reference to selected favorite list
-            FavoriteList favList = lstFavList.stream()
-            .filter(fl -> fl.getId() == listId)
-            .findFirst()
-            .orElse(null);
+            tx.begin();
+            _qGetFavLists = MainMenu.em.createNamedQuery("FavoriteList.findById");
+            _qGetFavLists.setParameter("id", listId);            
+            FavoriteList favList = (FavoriteList)_qGetFavLists.getResultList()
+                    .stream()
+                    .filter(fl -> ((FavoriteList)fl).getId() == listId)
+                    .findFirst()
+                    .orElse(null);
             if(favList != null) {
-                moviesDBConn.getTransaction().begin();
-
-                moviesDBConn.persist(favList);
+                MainMenu.em.persist(favList);
                 favList.setName(listName);
-
-                moviesDBConn.getTransaction().commit();
+                
+                populateFavListTable();
             }
+            tx.commit();
         }
         catch(Exception ex){
-            moviesDBConn.getTransaction().rollback();
+            tx.rollback();
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_btnChangeActionPerformed
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
+        EntityTransaction tx = MainMenu.em.getTransaction();
+        
         try {
             TitleMessageBox msgBox = new TitleMessageBox("Δημιουργία νέας λίστας", "");
 
@@ -413,21 +447,20 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             return;
 
             FavoriteList favList = new FavoriteList(msgBox.getPreDefMessage().trim());
-            moviesDBConn.getTransaction().begin();
-
-            moviesDBConn.persist(favList);
-            lstFavList.add(favList);
-            int row = lstFavList.size() - 1;
-            favListsTable.setRowSelectionInterval(row, row);
-            favListsTable.scrollRectToVisible(favListsTable.getCellRect(row, 0, true));
-
-            moviesDBConn.getTransaction().commit();
+            tx.begin();            
+            MainMenu.em.persist(favList);
+            tx.commit();
+            populateFavListTable();
         }
         catch(Exception ex){
+            tx.rollback();
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
-//            LOGGER.log(Level.SEVERE, "Exception occur", ex);
         }
     }//GEN-LAST:event_btnCreateActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        exitButtonActionPerformed(null);
+    }//GEN-LAST:event_formWindowClosing
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -439,18 +472,12 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     private javax.swing.JScrollPane favListsTableScrollPane;
     private javax.swing.JLabel headerJLaber;
     private javax.swing.JLabel jLabel2;
-    private java.util.List<model.FavoriteList> lstFavList;
-    private javax.persistence.EntityManager moviesDBConn;
-    private java.util.List<model.Movie> moviesList;
-    private javax.persistence.Query moviesQuery;
     private javax.swing.JTable moviesTable;
     private javax.swing.JScrollPane moviesTableScrollPane;
     private javax.swing.JPanel panelBottom;
     private javax.swing.JPanel panelHeader;
     private javax.swing.JPanel panelInfo;
     private javax.swing.JPanel panelMain;
-    private javax.persistence.Query qGetFavLists;
-    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
-    private MainMenu parent;
+
 }
