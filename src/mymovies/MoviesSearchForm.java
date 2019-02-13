@@ -19,10 +19,15 @@ public class MoviesSearchForm extends javax.swing.JFrame {
 
     /**
      * Creates new form moviesSearchGUI
+     * @param parent;
      */
+    
     public MoviesSearchForm(MainMenu parent) {
         this.parent = parent;
         initComponents();
+        
+        
+
     }
     
 
@@ -53,13 +58,25 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         headerJPanel = new javax.swing.JPanel();
         headerJLaber = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        homeButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
 
         setTitle("Αναζήτηση Ταινιών");
 
         org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, this, org.jdesktop.beansbinding.ELProperty.create("${defaultCloseOperation}"), this, org.jdesktop.beansbinding.BeanProperty.create("defaultCloseOperation"));
         bindingGroup.addBinding(binding);
 
-        movieTypeLabel.setFont(new java.awt.Font("Arial Black", 2, 12)); // NOI18N
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
+
+        movieTypeLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         movieTypeLabel.setText("Επιλογή Είδους Ταινίας");
 
         movieTypeComboBox.setFont(new java.awt.Font("Arial Black", 2, 12)); // NOI18N
@@ -87,7 +104,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             }
         });
 
-        movieSearchButton.setFont(new java.awt.Font("Arial Black", 2, 12)); // NOI18N
+        movieSearchButton.setFont(new java.awt.Font("Tahoma", 3, 14)); // NOI18N
         movieSearchButton.setText("Αναζήτηση");
         movieSearchButton.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         movieSearchButton.setDoubleBuffered(true);
@@ -102,7 +119,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             }
         });
 
-        resetChoicesButton.setFont(new java.awt.Font("Arial Black", 2, 12)); // NOI18N
+        resetChoicesButton.setFont(new java.awt.Font("Tahoma", 3, 14)); // NOI18N
         resetChoicesButton.setText("Καθαρισμός Επιλογών");
         resetChoicesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -110,7 +127,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             }
         });
 
-        yearMovieLabel.setFont(new java.awt.Font("Arial Black", 2, 12)); // NOI18N
+        yearMovieLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         yearMovieLabel.setText("Έτος Κυκολοφορίας");
 
         yearMovieFieldEditor.setColumns(4);
@@ -150,9 +167,16 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.Double.class, java.lang.String.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         //Επιλογή στήλης Βαθμολογία για ταξινόμηση
@@ -163,7 +187,9 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         movieResultTable.setRowSorter(sorter);
         movieResultTable.setToolTipText("Μπορείτε να ταξινομήσετε ανα Βαθμολογία");
         movieResultTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        movieResultTable.setAutoscrolls(false);
         movieResultTable.setColumnSelectionAllowed(true);
+        movieResultTable.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         movieResultTable.setNextFocusableComponent(favoriteListComboBox);
         movieResultTable.getTableHeader().setReorderingAllowed(false);
         movieResultTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -173,6 +199,9 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(movieResultTable);
         movieResultTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        if (movieResultTable.getColumnModel().getColumnCount() > 0) {
+            movieResultTable.getColumnModel().getColumn(1).setCellRenderer(null);
+        }
 
         org.jdesktop.swingbinding.JComboBoxBinding jComboBoxBinding = org.jdesktop.swingbinding.SwingBindings.createJComboBoxBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, favoriteListList, favoriteListComboBox);
         bindingGroup.addBinding(jComboBoxBinding);
@@ -199,10 +228,10 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             }
         });
 
-        addToListLabel.setFont(new java.awt.Font("Arial", 3, 12)); // NOI18N
+        addToListLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         addToListLabel.setText("Προσθήκη σε Λίστα");
 
-        removeFromListButton.setFont(new java.awt.Font("Arial Black", 3, 12)); // NOI18N
+        removeFromListButton.setFont(new java.awt.Font("Tahoma", 3, 14)); // NOI18N
         removeFromListButton.setText("Αφαίρεση από Λίστα");
         removeFromListButton.setToolTipText("Πατήστε για αφαίρεση από Λίστα");
         removeFromListButton.addActionListener(new java.awt.event.ActionListener() {
@@ -226,100 +255,126 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         headerJPanel.setLayout(headerJPanelLayout);
         headerJPanelLayout.setHorizontalGroup(
             headerJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(headerJPanelLayout.createSequentialGroup()
-                .addGap(318, 318, 318)
-                .addComponent(headerJLaber, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerJPanelLayout.createSequentialGroup()
+                .addGap(422, 422, 422)
+                .addComponent(headerJLaber, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                .addGap(401, 401, 401))
         );
         headerJPanelLayout.setVerticalGroup(
             headerJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerJPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(headerJPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(headerJLaber, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel1.setFont(new java.awt.Font("Arial", 3, 24)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", 3, 18)); // NOI18N
         jLabel1.setText("Πίνακας Αποτελεσμάτων Αναζήτησης");
+
+        homeButton.setBackground(new java.awt.Color(204, 255, 255));
+        homeButton.setText("<html><span style=\"font-size:15px;\">Επιστροφή στο Κεντρικό Μενού</span></html>");
+        homeButton.setToolTipText("Συντόμευση πλήκτρου: Esc");
+        homeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                homeButtonActionPerformed(evt);
+            }
+        });
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Πληροφορίες", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 18), new java.awt.Color(0, 102, 255))); // NOI18N
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jLabel2.setText("<html> <p> Με τη λειτουργία <strong style=\"color:blue\">Αναζήτηση Ταινιών</strong> παρέχεται η δυνατότητα αναζήτησης ταινιών της εφαρμογής. Συγκεκριμένα για την αναζήτηση παρέχονται οι παρακάτω επιλογές: </p> <ol> <li>Με την <strong style=\"color:blue\">Επιλογή Είδους Ταινίας</strong> , <strong style=\"color:blue\">Ετος Κυκλοφορίας</strong> και την επιλογή του πλήκτρου <strong style=\"color:blue\">Αναζήτηση</strong> εμφανίζονται οι ταινίες της εφαρμογής που τειρούν τα κριτήρια.</li> <li>Με την επιλογή μίας ταινίας, εμφανίζεται η Αγαπημένη Λίστα ( εφόσον ανήκει σε κάποια) και επιλέγοντας μία Αγαπημένη Λίστα στο πεδίο <strong style=\"color:blue\">Προσθήκη σε Λίστα</strong> , προστίθεται στην Λίστα αυτή.</li> </ol> </html>");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(196, 196, 196)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
+                            .addComponent(headerJPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(movieTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(movieSearchButton))
-                                .addGap(78, 78, 78)
+                                    .addComponent(movieTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(movieTypeComboBox, 0, 175, Short.MAX_VALUE)
+                                    .addComponent(movieSearchButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(resetChoicesButton)
-                                    .addComponent(yearMovieLabel)))
-                            .addGroup(layout.createSequentialGroup()
+                                    .addComponent(yearMovieFieldEditor, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                                    .addComponent(yearMovieLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(resetChoicesButton))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(movieTypeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(favoriteListComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGap(25, 25, 25)
-                                        .addComponent(addToListLabel)))
-                                .addGap(78, 78, 78)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(yearMovieFieldEditor, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(removeFromListButton))))
-                        .addGap(0, 206, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(headerJPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 679, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(100, 100, 100))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(235, 235, 235)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 448, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(addToListLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(248, 248, 248))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(favoriteListComboBox, 0, 215, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(removeFromListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(homeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(314, 314, 314))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 343, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(407, 407, 407))))))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {movieSearchButton, movieTypeComboBox, resetChoicesButton, yearMovieFieldEditor});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addToListLabel, favoriteListComboBox, movieSearchButton, movieTypeComboBox, movieTypeLabel, removeFromListButton, resetChoicesButton, yearMovieFieldEditor});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(headerJPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(1, 1, 1)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 337, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(addToListLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(favoriteListComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(removeFromListButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(movieTypeLabel)
-                    .addComponent(yearMovieLabel))
+                    .addComponent(yearMovieLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addToListLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(movieTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(yearMovieFieldEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(36, 36, 36)
+                    .addComponent(yearMovieFieldEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(favoriteListComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(removeFromListButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(movieSearchButton)
                     .addComponent(resetChoicesButton))
-                .addGap(23, 23, 23))
+                .addGap(18, 18, 18)
+                .addComponent(homeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(19, 19, 19))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {movieTypeLabel, yearMovieLabel});
-
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {movieSearchButton, resetChoicesButton});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {addToListLabel, favoriteListComboBox, movieSearchButton, movieTypeComboBox, movieTypeLabel, removeFromListButton, resetChoicesButton, yearMovieFieldEditor});
 
         movieTypeComboBox.getAccessibleContext().setAccessibleDescription("Πρέπει να επιλέξετε είδος ταινίας");
 
@@ -530,6 +585,36 @@ public class MoviesSearchForm extends javax.swing.JFrame {
            movieSearchButton.setEnabled(false); 
     }//GEN-LAST:event_yearMovieFieldEditorKeyPressed
 
+    private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeButtonActionPerformed
+        // TODO add your handling code here:
+        //Επιστροφή στο αρχικό μενού, θέτοντας το ξανά ενεργό και κλείνοντας την παρούσα φόρμα
+        int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να κλείσετε τη λειτουργία  'Aναζήτηση Ταινιών ;","ΠΡΟΣΟΧΗ !!!",JOptionPane.YES_NO_OPTION);
+        if(dialogResult == JOptionPane.NO_OPTION){
+            return;
+        }else {
+            parent.setEnabled(true);
+            parent.setVisible(true);
+            dispose();
+        }
+    }//GEN-LAST:event_homeButtonActionPerformed
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formWindowClosed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        //Επιστροφή στο αρχικό μενού, θέτοντας το ξανά ενεργό και κλείνοντας την παρούσα φόρμα
+        int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να κλείσετε τη λειτουργία  'Aναζήτηση Ταινιών ;","ΠΡΟΣΟΧΗ !!!",JOptionPane.YES_NO_OPTION);
+        if(dialogResult == JOptionPane.NO_OPTION){
+            return;
+        }else {
+            parent.setEnabled(true);
+            parent.setVisible(true);
+            dispose();
+        }
+    }//GEN-LAST:event_formWindowClosing
+
    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -540,7 +625,10 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     private javax.persistence.Query favoriteListQuery;
     private javax.swing.JLabel headerJLaber;
     private javax.swing.JPanel headerJPanel;
+    private javax.swing.JButton homeButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable movieResultTable;
     private javax.swing.JButton movieSearchButton;
@@ -553,7 +641,8 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
     private List <Movie> retrieveMovieList;
-    private MainMenu parent;    
+    private MainMenu parent;
+   
     /*
         Μέθοδος ενημέρωσης πίνακα ταινιών αναζήτησης από 
         την λίστα αποτελεσμάτων αναζήτησης
