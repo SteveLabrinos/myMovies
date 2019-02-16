@@ -24,9 +24,11 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     
     public MoviesSearchForm(MainMenu parent) {
         this.parent = parent;
+        
         initComponents();
+        this.movieSearchButton.setEnabled(false);
         
-        
+
 
     }
     
@@ -96,6 +98,9 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             }
         });
         movieTypeComboBox.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                movieTypeComboBoxKeyPressed(evt);
+            }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 movieTypeComboBoxKeyReleased(evt);
             }
@@ -199,9 +204,6 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(movieResultTable);
         movieResultTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        if (movieResultTable.getColumnModel().getColumnCount() > 0) {
-            movieResultTable.getColumnModel().getColumn(1).setCellRenderer(null);
-        }
 
         org.jdesktop.swingbinding.JComboBoxBinding jComboBoxBinding = org.jdesktop.swingbinding.SwingBindings.createJComboBoxBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, favoriteListList, favoriteListComboBox);
         bindingGroup.addBinding(jComboBoxBinding);
@@ -257,7 +259,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             headerJPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerJPanelLayout.createSequentialGroup()
                 .addGap(422, 422, 422)
-                .addComponent(headerJLaber, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                .addComponent(headerJLaber)
                 .addGap(401, 401, 401))
         );
         headerJPanelLayout.setVerticalGroup(
@@ -312,37 +314,33 @@ public class MoviesSearchForm extends javax.swing.JFrame {
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(movieTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(movieTypeComboBox, 0, 175, Short.MAX_VALUE)
-                                    .addComponent(movieSearchButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(movieTypeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                                    .addComponent(movieTypeComboBox, 0, 215, Short.MAX_VALUE)
+                                    .addComponent(movieSearchButton, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(yearMovieFieldEditor, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
-                                    .addComponent(yearMovieLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(resetChoicesButton))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(yearMovieFieldEditor, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                                    .addComponent(yearMovieLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                                    .addComponent(resetChoicesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
+                                .addGap(135, 135, 135)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(addToListLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(addToListLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                                         .addGap(248, 248, 248))
                                     .addGroup(layout.createSequentialGroup()
-                                        .addComponent(favoriteListComboBox, 0, 215, Short.MAX_VALUE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(removeFromListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                        .addComponent(favoriteListComboBox, 0, 218, Short.MAX_VALUE)
+                                        .addGap(33, 33, 33)
+                                        .addComponent(removeFromListButton, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)))))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(homeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(314, 314, 314))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 343, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(407, 407, 407))))))
+                        .addGap(363, 363, 363)
+                        .addComponent(homeButton)
+                        .addGap(314, 314, 314))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(348, 348, 348)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 698, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addToListLabel, favoriteListComboBox, movieSearchButton, movieTypeComboBox, movieTypeLabel, removeFromListButton, resetChoicesButton, yearMovieFieldEditor});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -353,8 +351,8 @@ public class MoviesSearchForm extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                .addGap(33, 33, 33)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(movieTypeLabel)
                     .addComponent(yearMovieLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -389,7 +387,8 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         κατοπίν πατήματος του Κουμπιού "Αναζήτηση"
     */
     private void movieSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_movieSearchButtonActionPerformed
-        // TODO add your handling code here: 
+        // TODO add your handling code here:       
+        
         
         //Ανάκτηση της επιλογής του τύπου της ταινίας
         String searchType = (String)movieTypeComboBox.getSelectedItem();
@@ -397,7 +396,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         String searchYear = yearMovieFieldEditor.getText();
         
         //Ανάκτηση ταινιών από την Βάση Δεμομένων βάσει κριτιρίων αναζήτησης
-        retrieveMovieList = retrieveFromDBMovieTable(searchType,searchYear);
+        retrieveMovieList = MovieSearchManipulation.retrieveFromDBMovieTable(searchType,searchYear,rootPane);
         
         //Προσθήκη των αποτελεσμάτων αναζήτησης στον πίνακα movieResultTable               
         addRowtoJTable(retrieveMovieList);       
@@ -450,7 +449,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             δεν είναι άδεια και τα δύο, το κουμπί "Αναζήτηση" ενεργοποιείται
             διαφορετικά απενεργοποιειται
         */
-        if(!movieTypeComboBox.getSelectedItem().equals("<Κανένα>" ) 
+        if(!movieTypeComboBox.getSelectedItem().equals("<Κανένα>")
                 && !(yearMovieFieldEditor.getText().equals(null)))
             movieSearchButton.setEnabled(true);
         else
@@ -490,7 +489,8 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         */
         try {
             if(!movieSelected.getFavoriteListId().equals(null)){
-                JOptionPane.showMessageDialog(rootPane,"Η ταινία ανήκει ήδη σε Αγαπημένη Λίστα."
+                JOptionPane.showMessageDialog(rootPane,"Η ταινία ανήκει ήδη στην Αγαπημένη Λίστα"
+                    + "\n\"" + movieSelected.getFavoriteListId().getName()+"\""
                     + "\nΕπιλέξτε διαφορετική Αγαπημένη Λίστα για αλλαγή"
                     + "\n ή αφήστε την εμφανιζόμενη Αγαπημένη Λίστα","Μήνυμα",JOptionPane.INFORMATION_MESSAGE);
                  favoriteListComboBox.setSelectedItem(movieSelected.getFavoriteListId().getName());
@@ -508,16 +508,32 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     private void favoriteListComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_favoriteListComboBoxMouseClicked
         // TODO add your handling code here:
         //Ανάκτηση της ταινίας από το μοντέλο του πίνακα αναζήτησης                     
-        Movie movieSelected = retrieveMovieList.get(movieResultTable.convertRowIndexToModel(movieResultTable.getSelectedRow()));
-        movieSelected.setFavoriteListId(retrieveFavoriteListFromDB(favoriteListComboBox.getSelectedIndex()));
-        /*
-            Ενημέρωση της Βάσης δεδομένων με την αλλαγή στην αγαπημένη λίστα
-            της επιλεγμένης ταινίας
-        */
-        updateMovieTabLe (movieSelected);
-        
-        JOptionPane.showMessageDialog(rootPane, ("Η ταινία προστέθηκε στην Αγαπημένη Λίστα"
+        Movie movieSelected = new Movie();
+        try {
+            movieSelected = retrieveMovieList.get(movieResultTable.convertRowIndexToModel(movieResultTable.getSelectedRow()));
+                     
+            movieSelected.setFavoriteListId(MovieSearchManipulation
+                    .retrieveFavoriteListFromDB(favoriteListComboBox.getSelectedIndex(),rootPane));           
+            /*
+                Ενημέρωση της Βάσης δεδομένων με την αλλαγή στην αγαπημένη λίστα
+                της επιλεγμένης ταινίας
+             */
+            JOptionPane.showMessageDialog(rootPane, ("Η ταινία προστέθηκε στην Αγαπημένη Λίστα"
                     + "\n\"" + movieSelected.getFavoriteListId().getName()+"\"" ),"Μήνυμα",JOptionPane.INFORMATION_MESSAGE);
+            
+            MovieSearchManipulation.updateMovieTabLe ();
+            
+        }catch(ArrayIndexOutOfBoundsException arexc){
+            favoriteListComboBox.setEnabled(false);
+            JOptionPane.showMessageDialog(rootPane, "Δεν υπάρχουν ακόμα Αγαπημένες Λίστες."
+                    + "\nΠαρακαλώ δημιουργήστε πρώτα τις Αγαπημένες σας Λίστες","Μήνυμα",JOptionPane.ERROR_MESSAGE);
+            favoriteListComboBox.setEnabled(true);
+        }catch(IndexOutOfBoundsException indexc){
+            favoriteListComboBox.setEnabled(false);
+            JOptionPane.showMessageDialog(rootPane, "Δεν υπάρχουν ακόμα Αγαπημένες Λίστες."
+                    + "\nΠαρακαλώ δημιουργήστε πρώτα τις Αγαπημένες σας Λίστες","Μήνυμα",JOptionPane.ERROR_MESSAGE); 
+            favoriteListComboBox.setEnabled(true);
+        }         
     }//GEN-LAST:event_favoriteListComboBoxMouseClicked
 
     private void favoriteListComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_favoriteListComboBoxItemStateChanged
@@ -554,7 +570,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             Ενημέρωση της Βάσης δεδομένων με την αλλαγή στην αγαπημένη λίστα
             της επιλεγμένης ταινίας
             */
-            updateMovieTabLe (movieSelected);
+            MovieSearchManipulation.updateMovieTabLe ();
             
             JOptionPane.showMessageDialog(rootPane, "Η ταινία διαγράφηκε από την"
                 + "\nΑγαπημένη Λίστα","Μήνυμα",JOptionPane.INFORMATION_MESSAGE);          
@@ -567,7 +583,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     }//GEN-LAST:event_removeFromListButtonActionPerformed
 
     /*
-        Ελεχος από το πεδίο κυκλοφορίας ταινίας για ύπαρξη τιμής  
+        Ελεχος από το πεδίο ;έτος κυκλοφορίας ταινίας για ύπαρξη τιμής  
         στα πεδία του είδους ταινίας και έτος κυκλοφορίας για  
         ενεργοποίηση/απενεργοποίηση του κουμπιού "Αναζήτηση"
     */
@@ -614,6 +630,11 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             dispose();
         }
     }//GEN-LAST:event_formWindowClosing
+
+    private void movieTypeComboBoxKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_movieTypeComboBoxKeyPressed
+        // TODO add your handling code here:
+                
+    }//GEN-LAST:event_movieTypeComboBoxKeyPressed
 
    
 
@@ -667,9 +688,11 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     }    
     
     /*
+    /*
         Μέθοδος Ανάκτησης από την Βάσει Δεδομένων των ταινιών που τηρούν
         τα κρητίρια αναζήτησης
     */
+    /*
     private List <Movie> retrieveFromDBMovieTable (String genreID, String year){
         //Ανάκτηση των κλειδιών του είδους της ταινίας
         int genre_id = 0;
@@ -695,7 +718,8 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         
         return movieSearchList;        
     } 
-    
+    */
+    /*
     //Μέθοδος Ανάκτησης των Αγαπημένων Λιστών από την Βάση Δεδομένων 
     private FavoriteList retrieveFavoriteListFromDB(int index){
          
@@ -706,7 +730,8 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         FavoriteList movieFavoriteList = favoriteList.get(index);
         return movieFavoriteList;
     }
-    
+    */
+    /*
     //Μέθοδος ανανέωσης ταινιων στη Βάση Δεδομένων
     private void updateMovieTabLe (Movie movie){
         
@@ -715,6 +740,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         em.getTransaction().commit();          
         
     }
-    
+    */
+       
        
 }
