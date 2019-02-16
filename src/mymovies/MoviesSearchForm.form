@@ -4,7 +4,7 @@
   <NonVisualComponents>
     <Component class="javax.persistence.EntityManager" name="em">
       <Properties>
-        <Property name="persistenceUnit" type="java.lang.String" value="MyMovies2PU"/>
+        <Property name="persistenceUnit" type="java.lang.String" value="myMoviesPU"/>
       </Properties>
     </Component>
     <Component class="javax.persistence.Query" name="favoriteListQuery">

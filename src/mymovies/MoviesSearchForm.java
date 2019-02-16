@@ -393,7 +393,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         //Ανάκτηση της επιλογής του τύπου της ταινίας
         String searchType = (String)movieTypeComboBox.getSelectedItem();
         ////Ανάκτηση του έτους κυκλοφορίας της ταινίας
-        String searchYear = yearMovieFieldEditor.getText();
+        String searchYear = yearMovieFieldEditor.getText().trim();
         
         //Ανάκτηση ταινιών από την Βάση Δεμομένων βάσει κριτιρίων αναζήτησης
         retrieveMovieList = MovieSearchManipulation.retrieveFromDBMovieTable(searchType,searchYear,rootPane);
@@ -498,17 +498,10 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         }catch (NullPointerException e){
             JOptionPane.showMessageDialog(rootPane, "Η ταινία δεν ανήκει σε Αγαπημένη Λίστα."
                     + "\nΕπιλέξτε Αγαπημένη Λίστα για προσθήκη","Μήνυμα",JOptionPane.INFORMATION_MESSAGE);
-        }   
-    }//GEN-LAST:event_movieResultTableMouseClicked
-
-    /*
-        Επιλογή της Αγαπημένης Λίστας και προσθήκη της επιλεγμένης
-        ταινίας σε αυτή
-    */
-    private void favoriteListComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_favoriteListComboBoxMouseClicked
-        // TODO add your handling code here:
+        } 
+        
         //Ανάκτηση της ταινίας από το μοντέλο του πίνακα αναζήτησης                     
-        Movie movieSelected = new Movie();
+        //Movie movieSelected = new Movie();
         try {
             movieSelected = retrieveMovieList.get(movieResultTable.convertRowIndexToModel(movieResultTable.getSelectedRow()));
                      
@@ -517,11 +510,11 @@ public class MoviesSearchForm extends javax.swing.JFrame {
             /*
                 Ενημέρωση της Βάσης δεδομένων με την αλλαγή στην αγαπημένη λίστα
                 της επιλεγμένης ταινίας
-             */
-            JOptionPane.showMessageDialog(rootPane, ("Η ταινία προστέθηκε στην Αγαπημένη Λίστα"
-                    + "\n\"" + movieSelected.getFavoriteListId().getName()+"\"" ),"Μήνυμα",JOptionPane.INFORMATION_MESSAGE);
+             */           
             
             MovieSearchManipulation.updateMovieTabLe ();
+            JOptionPane.showMessageDialog(rootPane, ("Η ταινία προστέθηκε στην Αγαπημένη Λίστα"
+                    + "\n\"" + movieSelected.getFavoriteListId().getName()+"\"" ),"Μήνυμα",JOptionPane.INFORMATION_MESSAGE);
             
         }catch(ArrayIndexOutOfBoundsException arexc){
             favoriteListComboBox.setEnabled(false);
@@ -534,6 +527,15 @@ public class MoviesSearchForm extends javax.swing.JFrame {
                     + "\nΠαρακαλώ δημιουργήστε πρώτα τις Αγαπημένες σας Λίστες","Μήνυμα",JOptionPane.ERROR_MESSAGE); 
             favoriteListComboBox.setEnabled(true);
         }         
+    }//GEN-LAST:event_movieResultTableMouseClicked
+
+    /*
+        Επιλογή της Αγαπημένης Λίστας και προσθήκη της επιλεγμένης
+        ταινίας σε αυτή
+    */
+    private void favoriteListComboBoxMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_favoriteListComboBoxMouseClicked
+        // TODO add your handling code here:
+        
     }//GEN-LAST:event_favoriteListComboBoxMouseClicked
 
     private void favoriteListComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_favoriteListComboBoxItemStateChanged
