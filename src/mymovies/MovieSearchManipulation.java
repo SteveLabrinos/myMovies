@@ -15,7 +15,7 @@ import model.Movie;
 
 /**
  *
- * @author SHADOW
+ * @author Periklis Bouzanis
  */
 public class MovieSearchManipulation {
     
