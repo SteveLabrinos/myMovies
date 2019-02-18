@@ -35,7 +35,7 @@ import java.util.Comparator;
     , @NamedQuery(name = "Movie.findByRating", query = "SELECT m FROM Movie m WHERE m.rating = :rating")
     , @NamedQuery(name = "Movie.findByOverview", query = "SELECT m FROM Movie m WHERE m.overview = :overview")
     , @NamedQuery(name = "Movie.findByGenreAndYear", query = "SELECT m FROM Movie m WHERE m.genreId.id =:genre_id "
-            + "and FUNC('YEAR',m.releaseDate) >=:year")
+            + "AND FUNC('YEAR',m.releaseDate) =:year")
      // Adding named query for getting movies of selected favorite list
     , @NamedQuery(name = "Movie.findByFavListId", query = "SELECT m FROM Movie m WHERE m.favoriteListId.id = :favlistid")})
 public class Movie implements Serializable{
