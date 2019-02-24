@@ -10,9 +10,20 @@ package mymovies;
  * @author Labrinos
  */
 import com.sun.javafx.scene.paint.GradientUtils;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -39,6 +50,11 @@ import javax.persistence.NoResultException;
 import static javax.swing.JOptionPane.showMessageDialog;
 import model.*;
 import java.util.List;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class MainMenu extends javax.swing.JFrame {
 
@@ -339,7 +355,7 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_movieSearchButtonActionPerformed
 
     private void movieSearchMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_movieSearchMenuItemActionPerformed
-        newSearchForm=new MoviesSearchForm(this);
+        newSearchForm = new MoviesSearchForm(this);
         newSearchForm.setVisible(true);
         setEnabled(false);
         setVisible(false);
@@ -355,8 +371,8 @@ public class MainMenu extends javax.swing.JFrame {
             setVisible(false);
         } catch (NoResultException e) {
             JOptionPane.showMessageDialog(rootPane,
-                    "Δεν υπάρχουν ταινίες καταχωρημένες στην εφαρμογή.\nΠαρακαλώ επιλέξτε την λειτουργία \"Ανάκτηση και Αποθήκευση Δεδομένων Ταινιών\""+
-                            "Σφάλμα: "+e.getMessage(),
+                    "Δεν υπάρχουν ταινίες καταχωρημένες στην εφαρμογή.\nΠαρακαλώ επιλέξτε την λειτουργία \"Ανάκτηση και Αποθήκευση Δεδομένων Ταινιών\""
+                    + "Σφάλμα: " + e.getMessage(),
                     "Σφάλμα", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_statisticsButtonActionPerformed
@@ -366,405 +382,1175 @@ public class MainMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_statisticsMenuItemActionPerformed
 
     private void populateDBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_populateDBButtonActionPerformed
-        //String ApotelesmaJSON = new String(); //μεταβλητή που αποθηκεύει πληροφορίες ροής (από το δίκτυο, συγκεκριμένα)
-        //String Anagnosi = new String(); //μεταβλητή που ενθυλακώνει τα δεδομένα που μεταφέρθηκαν από πηγές ροής (από το δίκτυο, συγκεκριμένα)               
-        int conv = 0; //βοηθητική μεταβλητή για αποθήκευση ακεραίων τιμών (για τα είδη ταινιών)
-        //int counter = 0; //μεταβλητή μετρητής
-        String k = new String(); //εδώ θα αποθηκευτούν τα είδη που ανήκει η εκάστοτε ταινία
-        String l = new String(); //εδώ θα αποθηκευτεί η (δεκαδική) τιμή βαθμολογίας της εκάστοτε ταινίας
-        int conv2 = 0; //εδώ θα αποθηκευτεί το μοναδικό αναγνωριστικό ταινίας (σε ακέραια τιμή), ήτοι ID κλειδι του πίνακα MOVIE 
-        String keep = new String(); //μεταβλητή που βοηθάει στο να πάρουμε ένα συγκεκριμένο είδος (genre) ταινίας από τα x διαθέσιμα 
-        String[] check = new String[30]; //πίνακας που αποθηκεύει μεμονόμενα τα είδη που ανήκει μια ταινία
-        int checker = 0; //μεταβλητή που μας δίχνει (σε) πόσα είδη ανήκει μια ταινία (σε ακέραια πληθική τιμή)
-        int checker_rep = 0; //η κανονική μεταβλητή που μας δείχνει σε πόσα είδη ανήκει μια ταινία (η checker εξυπηρετεί ως προσωρινός διανομέας ανίχνευσης)
-        String prefferable = new String(); //σε αυτή την μεταβλητή αποθηκεύουμε τελικά το είδος ταινίας που βρίσκεται πρώτο στην λίστα check[]
-        boolean getMovie = false; //μεταβλητή αληθές/ψευδές για το αν το συγκεκριμένο είδος ταινίας πρέπει να επιλεχθεί και να αποθηκευτεί στην βάση δεδομένων
-        int taken_movie = 0; //η συγκεκριμένη μεταβλητή σηματοδοτεί και την εγγραφή της εκάστοτε ταινίας στην βάση δεδομένων
-        int[] unique_id = new int[10000]; //πίνακας ακεραίων για ανίχνευση μοναδικών κλειδιών στην βάση δεδομένων (ας μην ξεχνάμε ότι ο πίνακας MOVIE πρέπει να αποθηκεύει μοναδικές τιμές, λόγω κλειδιού ID)
-        String CorrectSQL = new String(); //μεταβλητή αποθήκευσης της τελικής μορφής εντολής SQL για αποθήκευση της ταινίας στην βάση δεδομένων
-        String Naming = new String(); //μεταβλητή που περιέχει το όνομα της ταινίας (στην τελική μορφή προ της αποθήκευσης στην βάση δεδομένων)
-        String antikatastash = new String(); //μεταβλητή που γίνονται όλες οι διορθώσεις
-        int foundsame = 0; //μεταβλητή που αναζητάει για ίδια κλειδιά πριν γίνει οποιαδήποτε αποθήκευση στην βάση δεδομένων                        
-        DateFormat tiempo = new SimpleDateFormat("yyyy-MM-dd"); //ορισμός τύπου ημερομηνίας που συμφωνεί με την βάση δεδομένων (τροποποιήσιμος)      
-        Date GetMovieDate = new Date(); //παραλαβή ημερομηνίας από τις ταινίες και ετοιμασία για εγγραφή στην βάση δεδομένων      
-        Movie m[] = new Movie[500000]; //Αντικείμενα κλάσης MOVIE (ταινιών) (σε μορφή πίνακα για ευκολότερη ενσωμάτωση στην βάση δεδομένων)
-        Genre g[] = new Genre[3]; //ο τύπος και τα είδη ταινιών που θα περιέχει η βάση δεδομένων (αντικείμενα της κλάσης GENRE)
-        boolean CorrectYear = false; //μεταβλητή αληθές/ψευδές για να δηλώσουμε ότι θέλουμε ταινίες συγκεκριμένου έτους (2000) και έπειτα
-        String CheckYear = new String(); //μεταβλητή που παίρνει ως αλφαριθμητικό τα ψηφία του έτους (από το αντικείμενο JSON)
-        int ElegxosEtous = 0; //μεταβλητή που μετατρέπει το αλφαριθμητικό CheckYear σε ακέραιο αριθμό (χρήσιμο για ευκολότερη σύγκριση)        
-        String Mynhma = new String(); //μεταβλητή μηνυμάτωνεμφάνισης και πληροφοριών
-        int noofpages = 0; //ο αριθμός σελίδων που θα αναζητηθούν οι ταινίες (κάθε σελίδα έχει 20 ταινίες)
-        int noofgnr = 0; //τα διαθέσιμα είδη GENRE
-        double perce = 0.0; //δεκαδικός αριθμός που βοηθάει στην πρόοδο ολοκλήρωσης διαδικασίας (ποσοστό τοις εκατό στην διεκπεραίωση)
-        int Check_Page = 0; //κάνε μετατροπή αλφαριθμητικής δήλωσης σελίδων σε ακέραια τιμή (χρήσιμο για ευκολότερη σύγκριση)
-        String arithmos_selidwn = new String(); //ο αριθμός σελίδων σε αλφαριθμητική μεταβλητή
-        boolean percen = false; //Αληθές-ψευδές μεταβλητή για υπολογισμό προόδου ολοκλήρωσης διαδικασίας ή με πλήθος σελίδας
+        JFrame Plirofories = new JFrame("ΠΛΗΡΟΦΟΡΙΕΣ"); //όρισε μια νέα φόρμα
+        JPanel idsgcomx = new JPanel(new GridBagLayout()); //δημιούργησε και έναν νέο πίνακ 
+        Plirofories.getContentPane().setLayout(new FlowLayout()); //θέσε πλαίσιο στην φόρμα
+        Plirofories.setSize(390, 300); //θέσε μέγεθος της φόρμας στην οθόνη     
+        Plirofories.setLayout(new GridBagLayout()); //θα τακτοποιήσουμε τα στοιχεία του πίνακα της φόρμας μας     
+        GridBagConstraints stoixishx = new GridBagConstraints(); //ορισμός οριοθέτησης            
+        JLabel labelx0 = new JLabel("Πληροφορίες: ", SwingConstants.LEFT); //εμφάνισε πλαίσιο κειμένου στον χρήστη
+        JTextField conx0 = new JTextField("", 30);  //εμφάνισε πληροφορίες    
+        JTextField conx1 = new JTextField("", 30);  //εμφάνισε πληροφορίες   
+        JTextField conx2 = new JTextField("", 30);  //εμφάνισε πληροφορίες   
+        JTextField conx3 = new JTextField("", 30);  //εμφάνισε πληροφορίες  
+        JTextField conx4 = new JTextField("", 30);  //εμφάνισε πληροφορίες  
+        JButton Komvion0 = new JButton("Εντάξει"); //θέσε πλήκτρο (κουμπί) που ο χρήστης υποβάλλει    
+        ImageIcon eikn0 = new ImageIcon(this.getClass().getClassLoader().getResource("myMovies/ui/confirmation.png")); //ετοίμασε μια εικόνα που θα εμφανίζεται στο κουμπί
+        Komvion0.setIcon(eikn0); //ενσωμάτωσε την εικόνα στο κουμπί    
+        idsgcomx.add(labelx0); //κάνε προσθήκη του στοιχείου στον πίνακα στοιχείων
+        idsgcomx.add(conx0); //κάνε προσθήκη του στοιχείου στον πίνακα στοιχείων
+        idsgcomx.add(conx1); //κάνε προσθήκη του στοιχείου στον πίνακα στοιχείων
+        idsgcomx.add(conx2); //κάνε προσθήκη του στοιχείου στον πίνακα στοιχείων
+        idsgcomx.add(conx3); //κάνε προσθήκη του στοιχείου στον πίνακα στοιχείων
+        idsgcomx.add(conx4); //κάνε προσθήκη του στοιχείου στον πίνακα στοιχείων
+        Plirofories.add(idsgcomx); //και τέλος ενσωμάτωσε τον ίδιο τον πίνακα στην φόρμα           
+        Dimension szx = Toolkit.getDefaultToolkit().getScreenSize(); //θα θέσουμε την τοποθεσία της φόρμας στην οθόνη
+        int htx = szx.height; //όρισε ύψος για εμφάνιση στην οθόνη
+        int wdx = szx.width; //όρισε πλάτος για εμφάνιση στην οθόνη
+        Plirofories.setLocation(wdx / 2, htx / 2); //και κάνε την κατάλληλη τοποθέτηση
+        ImageIcon frame_iconx = new ImageIcon(this.getClass().getClassLoader().getResource("myMovies/ui/myMovies.jpg")); //προσδιόρισε το εικονίδιο της φόρμας σύνδεσης SQL
+        Plirofories.setIconImage(frame_iconx.getImage()); //θέσε το εικονίδιο σε προσάρτηση στην φόρμα σύνδεσης SQL
+        Plirofories.setResizable(false); //δεν γίνεται τροποποίηση στο μέγεθος    
+        stoixishx.insets = new Insets(3, 3, 3, 3); //θα στοιχίσουμε τα στοιχεία του πίνακα της φόρμας
+        stoixishx.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixishx.gridy = 1; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcomx.add(labelx0, stoixishx); //τοποθέτησε ως αντικείμενο στην φόρμα το μήνυμα     
+        stoixishx.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixishx.gridy = 2; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcomx.add(conx0, stoixishx); //τοποθέτησε το μήνυμα 
+        stoixishx.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixishx.gridy = 3; //θέσε αυτό το διαχωριστικό στον άξονα y   
+        idsgcomx.add(conx1, stoixishx); //τοποθέτησε το μήνυμα 
+        stoixishx.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixishx.gridy = 4; //θέσε αυτό το διαχωριστικό στον άξονα y  
+        idsgcomx.add(conx2, stoixishx); //τοποθέτησε το μήνυμα )
+        stoixishx.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixishx.gridy = 5; //θέσε αυτό το διαχωριστικό στον άξονα y  
+        idsgcomx.add(conx3, stoixishx); //τοποθέτησε το μήνυμα 
+        stoixishx.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixishx.gridy = 6; //θέσε αυτό το διαχωριστικό στον άξονα y  
+        idsgcomx.add(conx4, stoixishx); //τοποθέτησε το μήνυμα
+        stoixishx.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixishx.gridy = 7; //θέσε αυτό το διαχωριστικό στον άξονα y  
+        idsgcomx.add(Komvion0, stoixishx); //τοποθέτησε το μήνυμα                                                  
 
-        Mynhma = "Να γίνει εισαγωγή ταινιών στην βάση δεδομένων;\n\nΠΡΟΣΟΧΗ: οι υπάρχουσες ταινίες, καθώς και όλες οι λίστες αγαπημένων ταινιών θα διαγραφούν σε αυτή την ανάκτηση. Επίσης ελέγξτε ότι το ΣΔΒΔ είναι ενεργό πριν συνεχίσετε.";  //ενημέρωση στον χρήστη για το αν θέλει να ανακτήσει ταινίες απο τον εξυπηρετητή       
-        int apotelesma = JOptionPane.showConfirmDialog((Component) rootPane, Mynhma, "ΕΠΙΒΕΒΑΙΩΣΗ", JOptionPane.OK_CANCEL_OPTION); //εμφάνιση του μηνύματος για επιβεβαίωση από τον χρήστη
-        if (apotelesma == JOptionPane.OK_OPTION) {  //εφόσον ο χρήστης θέλει να κάνει ανάκτηση των ταινιών
+        int movie_clips = (int) (Math.random() * 21); //ακέραιος αριθμός για την εμφάνιση εικόνων στην φόρμα ανάκτησης ταινιών (movie clips)
+        int platos = 128; //θέσε μέγεθος για τις εικόνες (movie clips) 
+        int ypsos = 128; //θέσε μέγεθος για τις εικόνες (movie clips)  
+        JFrame SyndeshSQL = new JFrame("ΑΝΑΚΤΗΣΗ ΤΑΙΝΙΩΝ ΣΤΗΝ ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ"); //όρισε μια νέα φόρμα
+        JPanel idsgcom = new JPanel(new GridBagLayout()); //δημιούργησε και έναν νέο πίνακα της φόρμας
+        SyndeshSQL.getContentPane().setLayout(new FlowLayout()); //θέσε πλαίσιο στην φόρμα
+        SyndeshSQL.setSize(470, 350); //θέσε μέγεθος της φόρμας στην οθόνη    
+        SyndeshSQL.setLayout(new GridBagLayout()); //θα τακτοποιήσουμε τα στοιχεία του πίνακα της φόρμας μας     
+        GridBagConstraints stoixish = new GridBagConstraints(); //ορισμός οριοθέτησης            
+        JLabel label00 = new JLabel("Εισάγεται σελίδα εκκίνησης: ", SwingConstants.LEFT); //εμφάνισε πλαίσιο κειμένου στον χρήστη 
+        JTextField con00 = new JTextField("", 8);  //εμφάνισε πληροφορίες της σύνδεσης  
+        con00.setBorder(BorderFactory.createLineBorder(null, 2)); //κάνε έντονο το χρώμα του πεδίου της φόρμας
+        JLabel label01 = new JLabel("Εισάγεται σελίδα τέλους: ", SwingConstants.CENTER); //εμφάνισε πλαίσιο κειμένου στον χρήστη 
+        JTextField con01 = new JTextField("", 8); //εμφάνισε πληροφορίες σχετικά με την θύρα σύνδεσης
+        con01.setBorder(BorderFactory.createLineBorder(null, 2)); //κάνε έντονο το χρώμα του πεδίου της φόρμας
+        JLabel label02 = new JLabel("Πλήθος σελίδων: ", SwingConstants.CENTER); //εμφάνισε πλαίσιο κειμένου στον χρήστη 
+        JTextField con02 = new JTextField("Επιλέγεται από 1 εως 1000", 18); //εμφάνισε πληροφορίες    
+        con02.setEditable(false); //δεν επιτρέπονται τροποποιήσεις εδώ
+        con02.setBorder(BorderFactory.createLineBorder(null, 2)); //κάνε έντονο το χρώμα του πεδίου της φόρμας   
+        JButton Komvion1 = new JButton("Εντάξει"); //θέσε πλήκτρο (κουμπί) που ο χρήστης υποβάλλει                  
+        ImageIcon eikn1 = new ImageIcon(this.getClass().getClassLoader().getResource("myMovies/ui/OK.png")); //ετοίμασε μια εικόνα που θα εμφανίζεται στο κουμπί
+        Komvion1.setIcon(eikn1); //ενσωμάτωσε την εικόνα στο κουμπί    
+        JButton Komvion2 = new JButton("Κλείσιμο"); //θέσε πλήκτρο (κουμπί) που απλά κλείνει την φόρμα  
+        ImageIcon eikn2 = new ImageIcon(this.getClass().getClassLoader().getResource("myMovies/ui/cancel.jpg")); //ετοίμασε μια εικόνα που θα εμφανίζεται στο κουμπί
+        Komvion2.setIcon(eikn2); //ενσωμάτωσε την εικόνα στο κουμπί
+        ImageIcon Eikona = new ImageIcon(this.getClass().getClassLoader().getResource("myMovies/ui/up.png")); //ετοίμασε μια εικόνα που θα εμφανίζεται στην φόρμα
+        ImageIcon frame_icon = new ImageIcon(this.getClass().getClassLoader().getResource("myMovies/ui/myMovies.jpg")); //προσδιόρισε το εικονίδιο της φόρμας σύνδεσης SQL
+        SyndeshSQL.setIconImage(frame_icon.getImage()); //θέσε το εικονίδιο σε προσάρτηση στην φόρμα σύνδεσης SQL    
+        JLabel ProsartisiEikonas = new JLabel(Eikona); //θέσε πλαίσιο της φόρμας που θα δέχεται την εικόνα
+        ImageIcon Eikona2 = new ImageIcon(this.getClass().getClassLoader().getResource("myMovies/movie_icons/" + movie_clips + ".gif")); //ετοίμασε μια εικόνα που θα εμφανίζεται στην φόρμα             
+        if (movie_clips == 0) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Nightmare On Elm Street (1984)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 1) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: SteamBoat Willy (1928)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 2) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Terminator (1984)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 3) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Friday And 13 (1980)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 4) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: The Lucky Dog (1921)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 5) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Ace Ventura Pet Detective (1994)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 6) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Bride Of Chucky (1998)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 7) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: The Bad The Good And The Ugly (1966)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 8) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: The Simpsons (2007)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 9) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Evil Dead 2 - Dead By Dawn (1987)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 10) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Die Hard (1988)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 11) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Problem Child (1990)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 12) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Iron Man (2008)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 13) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Enter The Dragon (1973)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 14) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Scary Movie (2000)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 15) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Indiana Jones And The Kingdom Of The Crystal Skull (2008)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 16) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Modern Times (1936)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 17) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Taxi Driver (1976)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 18) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Ghostbusters (1984)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 19) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: Back To The Future (1985)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης
+        if (movie_clips == 20) { //ανάλογα το κλιπ που φορτώνεται
+            SyndeshSQL.setTitle("Πρόταση για σημερινή ταινία: The Matrix (1999)"); //βάλε αυτό τον τίτλο στην φόρμα
+        } //τέλος υπόθεσης           
+        Eikona2.setImage(Eikona2.getImage().getScaledInstance(platos, ypsos, Image.SCALE_DEFAULT)); //κάνε αλλαγή στο μέγεθος των εικόνων (movie clips)   
+        JLabel ProsartisiEikonas2 = new JLabel(Eikona2); //θέσε πλαίσιο της φόρμας που θα δέχεται την εικόνα
+        SyndeshSQL.setResizable(false); //η φόρμα δεν θα αλλάζει φόρμα (με βούληση του χρήστη)       
+        stoixish.insets = new Insets(3, 3, 3, 3); //θα στοιχίσουμε τα στοιχεία του πίνακα της φόρμας
+        stoixish.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 1; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(label00); //τοποθέτησε ως αντικείμενο στην φόρμα το μήνυμα  
+        idsgcom.add(con00); //τοποθέτησε ως αντικείμενο στην φόρμα το μήνυμα  
+        stoixish.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 1; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(label01, stoixish); //τοποθέτησε το μήνυμα 
+        stoixish.gridx = 1; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 1; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(con01, stoixish); //τοποθέτησε το πεδίο 
+        stoixish.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 2; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(label02, stoixish); //προσάρτησε το μήνυμα 
+        stoixish.gridx = 1; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 2; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(con02, stoixish); //προσάρτησε το πεδίο 
+        stoixish.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 3; //θέσε αυτό το διαχωριστικό στον άξονα y
+        stoixish.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 5; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(Komvion1, stoixish); //τοποθέτησε ως αντικείμενο στην φόρμα το πλήκτρο υποβολής στοιχείων
+        stoixish.gridx = 1; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 5; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(Komvion2, stoixish); //τοποθέτησε ως αντικείμενο στην φόρμα το πλήκτρο κλεισίματος της φόρμας
+        stoixish.gridx = 0; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 6; //θέσε αυτό το διαχωριστικό στον άξονα y
+        idsgcom.add(ProsartisiEikonas, stoixish); //προσάρτησε την εικόνα στην φόρμα
+        stoixish.gridx = 1; //θέσε αυτό το διαχωριστικό στον άξονα x
+        stoixish.gridy = 6; //θέσε αυτό το διαχωριστικό στον άξονα y    
+        idsgcom.add(ProsartisiEikonas2, stoixish); //προσάρτησε την εικόνα στην φόρμα
+        SyndeshSQL.add(idsgcom); //και τέλος ενσωμάτωσε τον ίδιο τον πίνακα στην φόρμα           
+        Dimension sz = Toolkit.getDefaultToolkit().getScreenSize(); //θα θέσουμε την τοποθεσία της φόρμας στην οθόνη
+        int ht = sz.height; //όρισε ύψος για εμφάνιση στην οθόνη
+        int wd = sz.width; //όρισε πλάτος για εμφάνιση στην οθόνη   
+        SyndeshSQL.setLocation(wd / 2, ht / 2); //και κάνε την κατάλληλη τοποθέτηση
+        Komvion1.setBackground(Color.GRAY); //θέσε χρώμα στο κουμπί της επιβεβαίωσης δεδομένων
+        Komvion2.setBackground(Color.GRAY); //θέσε χρώμα στο κουμπί του κλεισίματος της φόρμας 
+        SyndeshSQL.setVisible(true); //και εμφάνισε την φόρμα 
+        this.setVisible(false); //κλείσε την "πατρική -κύρια- φόρμα"    
 
-            JFrame parathyro = new JFrame("Ολοκλήρωση Διαδικασίας"); //Δημιούργησε το παράθυρο προόδου
-            JProgressBar idsg=initProgressBarFrame(parathyro);
-      
-            Connection elegxos_syndeshs = null;  //αντικείμενο ελέγχου για σύνδεση στην βάση δεδομένων
-            try { //διαχείριση εξαιρέσεων    
-                Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); //Θα πραγματοποιήσεις σύνδεση στο ΣΔΒΔ Oracle Derby
-                elegxos_syndeshs = DriverManager.getConnection("jdbc:derby://localhost:1527/myMoviesDB", "test", "test"); //Πραγματοποίησε διαπίστευση για σύνδεση στην βάση δεδομένων                                     
-                elegxos_syndeshs.close(); //ολοκλήρωσε την διαδικασία σύνδεσης (με λίγα λόγια, δες αν είναι όλα εντάξει και η σύνδεση είναι ενεργή)           
-                if (Check_Page <= 0) { //κάνε έλεγχο για το πόσες σελίδες θέλει ο χρήστης να ανακτήσει
-                    do { //επανέλαβε έναν βρόγχο
-                        arithmos_selidwn = JOptionPane.showInputDialog(rootPane, "Εισάγετε θετικό αριθμό σελίδων (ακέραιος αριθμός) για την ανάκτηση ταινιών:","10"); //σε περίπτωση που ο χρήστης δεν δίνει θετικές ακέραιες τιμές για πλήθος σελίδων
-                        Check_Page = Integer.parseInt(arithmos_selidwn); //η συγκεκριμένη μεταβλητή μετατρέπει την αλφαριθμητική τιμή σελίδων σε ακέραια (χρήσιμο για συγκρίσεις)
-                    } while (Check_Page <= 0); //επανέλαβε τον βρόγχο μέχρις ώτου ο χρήστης εισάγει έγκύρη (θετική ακέραια τιμή) σελίδων                  
-                } //τέλος υπόθεσης
-                
-                //Διαγραφή του κάθε πίνακα της ΒΔ εκτός των λιστών αγαπημένων ταινιών
-                deleteDBTable("Movie");
-                deleteDBTable("Genre");
-                deleteDBTable("FavoriteList");
-                
-                parathyro.setVisible(true); //θέσε το παράθυρο εμφανές       
-                idsg.setVisible(true); //θέσε (και) την πρόοδο ολοκλήρωσης διαδικασίας             
+        SyndeshSQL.addWindowListener(new java.awt.event.WindowAdapter() { //εποπτεία φόρμας κλεισίματος
+            @Override //παράμετροι
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) { //εποπτεία στο κλείσιμο της φόρμας        
+                showMessageDialog(null, "Όταν είστε έτοιμοι, επιστρέψτε για ανάκτηση ταινιών.\n", "ΕΝΗΜΕΡΩΣΗ", 1); //ενημέρωσε τον χρήστη                             
+                SyndeshSQL.setVisible(false); //κλείσε την φόρμα  
+                setVisible(true); //εμφάνισε την πατρική φόρμα                  
+            } //τέλος εποπτείας κλεισίματος φόρμας
+        }); //τέλος εποπτείας φόρμας
+        Plirofories.addWindowListener(new java.awt.event.WindowAdapter() { //εποπτεία φόρμας κλεισίματος
+            @Override //παράμετροι
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) { //εποπτεία στο κλείσιμο της φόρμας         
+                Plirofories.setVisible(false); //κλείσε την φόρμα      
+            } //τέλος εποπτείας κλεισίματος φόρμας
+        }); //τέλος εποπτείας φόρμας      
+        conx0.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού 
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                conx0.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος
 
-                URL url = null; //θέσε αντικείμενο σύνδεσης τύπου HTTP/HTTPS
-                try { //διαχείριση εξαιρέσεων 
-                    url = new URL("https://api.themoviedb.org/3/genre/movie/list?&api_key=" + API_KEY); //κάνε σύνδεση στον εξυπηρετητή (σε μορφή JSON) για όλα τα είδη ταινιών (genres)
-                } catch (MalformedURLException ex) { //εφόσον υπάρξουν ζητήματα
-                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες σφάλματων εξαίρεσης
-                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx0.setToolTipText("Πληροφορίες σχετικά με την προσάρτηση ταινιών"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο                
+            } //τέλος συμβάντος            
 
-                try (InputStream is = url.openStream(); //(με προσοχή εξαιρέσεων) τροδοδότησε μας με JSON τα είδη ταινιών (τα δεδομένα είναι σε ροή - σε κατέβασμα)
-                        JsonReader rdr = Json.createReader(is)) { //φτιάξε βοηθητικό αντικείμενο που διαβάζει τα δεδομένα JSON  
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος                
+        }); //τέλος εποπτείας        
+        conx1.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού 
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος
 
-                    JsonObject obj = rdr.readObject(); //θέσε λειτουργική μονάδα ανάγνωσης JSON που διαβάζει τις ενθυλακώσεις του περιεχομένου JSON
-                    JsonArray results = obj.getJsonArray("genres"); //για καλύτερη προσπέλαση του περιεχομένου JSON, κάνε τις ενθυλακώσεις σε δομημένους πίνακες
-                    for (JsonObject result : results.getValuesAs(JsonObject.class)) { //ξεκίνησε βρόγχο διαβάζοντας κάθε στοιχείο του δομημένου πίνακα          
-                        conv = result.getInt("id"); //αποθήκευσε στην βοηθητική μεταβλητή τις ακέραιες τιμές των ειδών (των ταινιών)
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx1.setToolTipText("ΠΛηροφορίες σχετικά με το πλήθος των ταινιών που προσαρτήθηκαν"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο                
+            } //τέλος συμβάντος            
 
-                        if (conv == 28) { //εφόσον βρήκαμε το είδος ταινίας που θέλουμε να έχει η βάση δεδομένων (28)
-                            g[0] = new Genre(); //θέσε αυτό το αντικείμενο κλάσης ενεργό                
-                            g[0].setId(28); //και αποθήκευσε σε αυτό, τον κωδικό είδους ταινίας
-                            g[0].setName(result.getString("name", "")); //αποθήκευσε επίσης σε αυτό και την περιγραφή του τύπου της ταινίας (ταινίες δράσης)      
-                        } //τέλος υπόθεσης
-                        if (conv == 878) { //εφόσον βρήκαμε το είδος ταινίας που θέλουμε να έχει η βάση δεδομένων (878)
-                            g[1] = new Genre(); //θέσε αυτό το αντικείμενο κλάσης ενεργό  
-                            g[1].setId(10749); //και αποθήκευσε σε αυτό, τον κωδικό είδους ταινίας
-                            g[1].setName(result.getString("name", "")); //αποθήκευσε επίσης σε αυτό και την περιγραφή του τύπου της ταινίας (ρομαντικές ταινίες)
-                        } //τέλος υπόθεσης 
-                        if (conv == 10749) { //εφόσον βρήκαμε το είδος ταινίας που θέλουμε να έχει η βάση δεδομένων (10749)
-                            g[2] = new Genre(); //θέσε αυτό το αντικείμενο κλάσης ενεργό
-                            g[2].setId(878); //και αποθήκευσε σε αυτό, τον κωδικό είδους ταινίας
-                            g[2].setName(result.getString("name", "")); //αποθήκευσε επίσης σε αυτό και την περιγραφή του τύπου της ταινίας (επιστημονικής φαντασίας)
-                        } //τέλος υπόθεσης
-                    } //τέλος βρόγχου ανάγνωσης περιεχομένου JSON
-                } catch (IOException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος                
+        }); //τέλος εποπτείας        
+        conx2.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού 
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx2.setToolTipText("Πληροφορίες σχετικά το πλήθος των ταινιών που προσπελάθηκαν"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο                
+            } //τέλος συμβάντος            
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος                
+        }); //τέλος εποπτείας        
+        conx3.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού 
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setToolTipText("Πληροφορίες σχετικά με το ποσοστό τοις εκατό της προσάρτησης ταινιών"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο                
+            } //τέλος συμβάντος            
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος                
+        }); //τέλος εποπτείας        
+        conx4.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού 
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setToolTipText("Πληροφορίες σχετικά για το διάστημα προσπέλασης των ταινιών"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο                
+            } //τέλος συμβάντος            
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                conx0.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx1.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                conx2.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx3.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                conx4.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+            } //τέλος συμβάντος                
+        }); //τέλος εποπτείας          
+        Komvion0.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού (για την επιβεβαίωση κλεισίματος της φόρμας από τονυ χρήστη)
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                Komvion0.setBackground(Color.RED); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion0.setFont(Komvion2.getFont().deriveFont(Font.BOLD, 14f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων έντονη γραφή και μέγεθος                            
+                URL url98 = this.getClass().getClassLoader().getResource("myMovies/ui/metal_gong.wav"); //επέλεξε αρχείο ήχου
+                AudioInputStream EisodosHxou = null; //θέσε γραμμή ήχου
+                try { //διαχείριση εξαιρέσων
+                    EisodosHxou = AudioSystem.getAudioInputStream(url98); //θέσε τον οδηγό αναπαραγωγής ήχου
+                } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
                     Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                } //ολοκλήρωσε την σύνδεση με τον εξυπηρετητή
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης         
+                Clip hxos = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
+                try { //διαχείριση εξαιρέσων
+                    hxos = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                try { //διαχείριση εξαιρέσων                            
+                    hxos.open(EisodosHxou); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                hxos.start(); //κάνε αναπαραγωγή το αρχείο ήχου 
+                Plirofories.setVisible(false); //κλείσε αυτή την φόρμα          
+            } //τέλος συμβάντος
 
-                noofgnr = 2; //θέτουμε τα είδη ταινιών που θα γραφούν στην βάση δεδομένων
-                noofpages = Check_Page; //έχουμε θέσει ήδη των αριθμών των σελίδων που θα γίνει η ανάκτηση ταινιών στην βάση δεδομένων
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                Komvion0.setBackground(Color.RED); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion0.setFont(Komvion2.getFont().deriveFont(Font.BOLD, 14f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων έντονη γραφή και μέγεθος                
+                Komvion0.setToolTipText("Κλείσιμο και επιστροφή στην φόρμα ανάκτησης ταινιών"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο  
+                URL url08 = this.getClass().getClassLoader().getResource("myMovies/ui/selected.wav"); //επέλεξε αρχείο ήχου
+                AudioInputStream EisodosHxou = null; //θέσε γραμμή ήχου
+                try { //διαχείριση εξαιρέσων
+                    EisodosHxou = AudioSystem.getAudioInputStream(url08); //θέσε τον οδηγό αναπαραγωγής ήχου
+                } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης         
+                Clip hxos = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
+                try { //διαχείριση εξαιρέσων
+                    hxos = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                try { //διαχείριση εξαιρέσων                            
+                    hxos.open(EisodosHxou); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                hxos.start(); //κάνε αναπαραγωγή το αρχείο ήχου                  
+            } //τέλος συμβάντος            
 
-                if (noofpages <= 100) { //αν είμαστε στα όρια του ποσοστού τοις εκατό (%)
-                    perce = 100 / noofpages; //μεταβλητή υπολογισμού ποσοστού της εκατό για την πρόοδο ολοκλήρωσης διαδικασίας    
-                    idsg.setMinimum(0); //θέσε τον μικρότερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
-                    idsg.setMaximum(100); //θέσε τον μεγαλύτερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
-                    percen = true; //δείκτης για να γίνει πρόοδος ολοκλήρωσης διαδικασίας με ποσοστό τοις εκατό
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                Komvion0.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion0.setFont(Komvion2.getFont().deriveFont(Font.PLAIN, 12f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων κανονική γραφή και μέγεθος                   
+            } //τέλος συμβάντος  
+        }); //τέλος εποπτείας      
+        Komvion0.addActionListener(new ActionListener() { //θα πρέπει να ξέρει το κάθε πλήκτρο τι να κάνει (εποπτεία)                                                                       
+            @Override //θέσε παραμέτρους
+            public void actionPerformed(ActionEvent ae) { //εκκίνηση παρακολούθησης συμβάντος με το πλήκτρο κλεισίματος                                                                       
+                Plirofories.setVisible(false); //κλείσε την φόρμα                                       
+            } //τέλος παρακολούθησης                            
+        }); //τέλος εποπτείας     
+        con00.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού 
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                con00.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα                
+            } //τέλος συμβάντος
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                con00.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα 
+                con00.setToolTipText("Εισάγετε τον αριθμό της πρώτης σελίδας (εξ'ορισμού: τίποτα)"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο                
+            } //τέλος συμβάντος            
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                con00.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα                
+            } //τέλος συμβάντος                
+        }); //τέλος εποπτείας  
+        con01.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού (για την θύρα της βάσης δεδομένων που επιβεβαιώνει ο χρήστης)
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                con00.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+            } //τέλος συμβάντος           
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                con00.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setToolTipText("Εισάγετε τον αριθμό της τελευταίας σελίδας (εξ'ορισμού: τίποτα) - μέχρι 1000 το πολύ"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο  
+            } //τέλος συμβάντος           
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                con00.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+            } //τέλος συμβάντος                                 
+        }); //τέλος εποπτείας    
+        con02.addMouseListener(new MouseAdapter() { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                con00.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+            } //τέλος συμβάντος
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                con00.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.YELLOW); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setToolTipText("Το πλήθος των σελίδων είναι μέχρι 1000 - Δεν μπορείτε να δώσετε καμία τιμή εδώ"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο  
+            } //τέλος συμβάντος            
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                con00.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con01.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                con02.setBackground(Color.WHITE); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+            } //τέλος συμβάντος    
+        }); //τέλος εποπτείας       
+        Komvion2.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού (για την επιβεβαίωση κλεισίματος της φόρμας από τονυ χρήστη)
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                Komvion2.setBackground(Color.RED); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion2.setFont(Komvion2.getFont().deriveFont(Font.BOLD, 14f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων έντονη γραφή και μέγεθος
+                Komvion1.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα                                                                                                 
+            } //τέλος συμβάντος
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                Komvion2.setBackground(Color.RED); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion2.setFont(Komvion2.getFont().deriveFont(Font.BOLD, 14f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων έντονη γραφή και μέγεθος
+                Komvion1.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα  
+                Komvion2.setToolTipText("Απόρριψη των επιλογών σας και επιστροφή στο βασικό μενού διαχείρισης ταινιών"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο  
+                URL url00 = this.getClass().getClassLoader().getResource("myMovies/ui/selected.wav"); //επέλεξε αρχείο ήχου
+                AudioInputStream EisodosHxou = null; //θέσε γραμμή ήχου
+                try { //διαχείριση εξαιρέσων
+                    EisodosHxou = AudioSystem.getAudioInputStream(url00); //θέσε τον οδηγό αναπαραγωγής ήχου
+                } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης         
+                Clip hxos = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
+                try { //διαχείριση εξαιρέσων
+                    hxos = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                try { //διαχείριση εξαιρέσων                            
+                    hxos.open(EisodosHxou); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                hxos.start(); //κάνε αναπαραγωγή το αρχείο ήχου           
+            } //τέλος συμβάντος            
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                Komvion2.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion2.setFont(Komvion2.getFont().deriveFont(Font.PLAIN, 12f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων κανονική γραφή και μέγεθος
+                Komvion1.setBackground(Color.GRAY);  //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα   
+            } //τέλος συμβάντος  
+        }); //τέλος εποπτείας    
+        Komvion1.addMouseListener(new MouseAdapter() { //χειρισμός συμβάντων ποντικιού (για τα στοιχεία της βάσης δεδομένων που επιβεβαιώνει ο χρήστης)
+            @Override //παράμετροι
+            public void mouseClicked(MouseEvent e) { //συμβάν κλικ στο ποντίκι
+                Komvion2.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion1.setBackground(Color.RED); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion1.setFont(Komvion2.getFont().deriveFont(Font.BOLD, 14f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων έντονη γραφή και μέγεθος                                                      
+            } //τέλος συμβάντος
+
+            @Override //παράμετροι
+            public void mouseEntered(MouseEvent me) { //σύμβαν μετακίνησης του ποντικιού στα αντικείμενα που εξετάζονται παρακάτω
+                Komvion2.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion1.setBackground(Color.RED);  //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion1.setFont(Komvion2.getFont().deriveFont(Font.BOLD, 14f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων έντονη γραφή και μέγεθος
+                Komvion1.setToolTipText("Αποδοχή των επιλογών σας και συνέχεια"); //εμφάνισε βοήθεια για το εκάστοτε πεδίο  
+                URL url01 = this.getClass().getClassLoader().getResource("myMovies/ui/selected.wav"); //επέλεξε αρχείο ήχου
+                AudioInputStream EisodosHxou = null; //θέσε γραμμή ήχου
+                try { //διαχείριση εξαιρέσων
+                    EisodosHxou = AudioSystem.getAudioInputStream(url01); //θέσε τον οδηγό αναπαραγωγής ήχου
+                } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης         
+                Clip hxos = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
+                try { //διαχείριση εξαιρέσων
+                    hxos = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                try { //διαχείριση εξαιρέσων                            
+                    hxos.open(EisodosHxou); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                hxos.start(); //κάνε αναπαραγωγή το αρχείο ήχου  
+            } //τέλος συμβάντος           
+
+            @Override //παράμετροι
+            public void mouseExited(MouseEvent me) { //συμβάν απομάκρυνσης του ποντικιού από τα αντικείμενα που εξετάζονται παρακάτω
+                Komvion2.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion1.setBackground(Color.GRAY); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων το ανάλογο χρώμα
+                Komvion1.setFont(Komvion2.getFont().deriveFont(Font.PLAIN, 12f)); //θέσε σε αυτά τα πεδία εισαγωγής στοιχείων έντονη γραφή και μέγεθος
+            } //τέλος συμβάντος   
+        }); //τέλος εποπτείας       
+        Komvion2.addActionListener(new ActionListener() { //θα πρέπει να ξέρει το κάθε πλήκτρο τι να κάνει (εποπτεία)                                                                       
+            @Override //θέσε παραμέτρους
+            public void actionPerformed(ActionEvent ae) { //εκκίνηση παρακολούθησης συμβάντος με το πλήκτρο κλεισίματος
+                URL url97 = this.getClass().getClassLoader().getResource("myMovies/ui/A-Tone.wav"); //επέλεξε αρχείο ήχου
+                AudioInputStream EisodosHxou = null; //θέσε γραμμή ήχου
+                try { //διαχείριση εξαιρέσων
+                    EisodosHxou = AudioSystem.getAudioInputStream(url97); //θέσε τον οδηγό αναπαραγωγής ήχου
+                } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης         
+                Clip hxos = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
+                try { //διαχείριση εξαιρέσων
+                    hxos = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                try { //διαχείριση εξαιρέσων                            
+                    hxos.open(EisodosHxou); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                hxos.start(); //κάνε αναπαραγωγή το αρχείο ήχου                             
+                showMessageDialog(null, "Όταν είστε έτοιμοι, επιστρέψτε για ανάκτηση ταινιών.\n", "ΕΝΗΜΕΡΩΣΗ", 1); //ενημέρωσε τον χρήστη                                                
+                SyndeshSQL.setVisible(false); //κλείσε την φόρμα 
+                if (Plirofories.isVisible()) { //αν η "θυγατρική" φορμά είναι ανοικτή
+                    Plirofories.setVisible(false); //τότε να την κλείσεις
                 } //τέλος υπόθεσης
-                if (noofpages > 100) { //αν δεν μπορούμε να πάρουμε όριο ποσοστού τοις εκατό, η πρόοδος ολοκλήρωσης θα γίνεται με το σύνολο των σελίδων       
-                    idsg.setMinimum(1); //θέσε τον μικρότερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
-                    idsg.setMaximum(noofpages); //θέσε τον μεγαλύτερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
-                    percen = false; //δείκτης για να γίνει πρόοδος ολοκλήρωσης διαδικασίας με πλήθος σελίδων
-                } //τέλος υπόθεσης
+                setVisible(true); //εμφάνισε την πατρική φόρμα  
+            } //τέλος παρακολούθησης                            
+        }); //τέλος ορισμού εποπτείας           
+        Komvion1.addActionListener(new ActionListener() { //θα πρέπει να ξέρει το κάθε πλήκτρο τι να κάνει (εποπτεία)                                                                         
+            @Override //θέσε παραμέτρους
+            public void actionPerformed(ActionEvent ae) { //εκκίνηση παρακολούθησης συμβάντος με το πλήκτρο λειτουργίας       
 
-                em.getTransaction().begin(); //ξεκίνησε νέο αίτημα λειτουργίας στην βάση δεδομένων
-                for (int i = 0; i <= noofgnr; i++) { //εκκίνησε βρόγχο για να γράψεις τα είδη ταινιών στην βάση δεδομένων
-                    em.persist(g[i]); //και απλά γράψε αυτά τα είδη ταινιών
-                } //τέλος βρόγχου
+                boolean User_Found = false; //μεταβλητή αληθές/ψευδές για τον χειρισμό της φόρμας                       
+                int conv = 0; //βοηθητική μεταβλητή για αποθήκευση ακεραίων τιμών (για τα είδη ταινιών)        
+                String k = new String(); //εδώ θα αποθηκευτούν τα είδη που ανήκει η εκάστοτε ταινία
+                String l = new String(); //εδώ θα αποθηκευτεί η (δεκαδική) τιμή βαθμολογίας της εκάστοτε ταινίας
+                int conv2 = 0; //εδώ θα αποθηκευτεί το μοναδικό αναγνωριστικό ταινίας (σε ακέραια τιμή), ήτοι ID κλειδι του πίνακα MOVIE 
+                String keep = new String(); //μεταβλητή που βοηθάει στο να πάρουμε ένα συγκεκριμένο είδος (genre) ταινίας από τα x διαθέσιμα 
+                String[] check = new String[30]; //πίνακας που αποθηκεύει μεμονόμενα τα είδη που ανήκει μια ταινία
+                int checker = 0; //μεταβλητή που μας δίχνει (σε) πόσα είδη ανήκει μια ταινία (σε ακέραια πληθική τιμή)
+                int checker_rep = 0; //η κανονική μεταβλητή που μας δείχνει σε πόσα είδη ανήκει μια ταινία (η checker εξυπηρετεί ως προσωρινός διανομέας ανίχνευσης)
+                String prefferable = new String(); //σε αυτή την μεταβλητή αποθηκεύουμε τελικά το είδος ταινίας που βρίσκεται πρώτο στην λίστα check[]
+                boolean getMovie = false; //μεταβλητή αληθές/ψευδές για το αν το συγκεκριμένο είδος ταινίας πρέπει να επιλεχθεί και να αποθηκευτεί στην βάση δεδομένων
+                int taken_movie = 0; //η συγκεκριμένη μεταβλητή σηματοδοτεί και την εγγραφή της εκάστοτε ταινίας στην βάση δεδομένων
+                int[] unique_id = new int[10000]; //πίνακας ακεραίων για ανίχνευση μοναδικών κλειδιών στην βάση δεδομένων (ας μην ξεχνάμε ότι ο πίνακας MOVIE πρέπει να αποθηκεύει μοναδικές τιμές, λόγω κλειδιού ID)
+                String CorrectSQL = new String(); //μεταβλητή αποθήκευσης της τελικής μορφής εντολής SQL για αποθήκευση της ταινίας στην βάση δεδομένων
+                String Naming = new String(); //μεταβλητή που περιέχει το όνομα της ταινίας (στην τελική μορφή προ της αποθήκευσης στην βάση δεδομένων)
+                String antikatastash = new String(); //μεταβλητή που γίνονται όλες οι διορθώσεις
+                int foundsame = 0; //μεταβλητή που αναζητάει για ίδια κλειδιά πριν γίνει οποιαδήποτε αποθήκευση στην βάση δεδομένων                        
+                DateFormat tiempo = new SimpleDateFormat("yyyy-MM-dd"); //ορισμός τύπου ημερομηνίας που συμφωνεί με την βάση δεδομένων (τροποποιήσιμος)      
+                Date GetMovieDate = new Date(); //παραλαβή ημερομηνίας από τις ταινίες και ετοιμασία για εγγραφή στην βάση δεδομένων      
+                Movie m[] = new Movie[500000]; //Αντικείμενα κλάσης MOVIE (ταινιών) (σε μορφή πίνακα για ευκολότερη ενσωμάτωση στην βάση δεδομένων)
+                Genre g[] = new Genre[3]; //ο τύπος και τα είδη ταινιών που θα περιέχει η βάση δεδομένων (αντικείμενα της κλάσης GENRE)
+                boolean CorrectYear = false; //μεταβλητή αληθές/ψευδές για να δηλώσουμε ότι θέλουμε ταινίες συγκεκριμένου έτους (2000) και έπειτα
+                String CheckYear = new String(); //μεταβλητή που παίρνει ως αλφαριθμητικό τα ψηφία του έτους (από το αντικείμενο JSON)
+                int ElegxosEtous = 0; //μεταβλητή που μετατρέπει το αλφαριθμητικό CheckYear σε ακέραιο αριθμό (χρήσιμο για ευκολότερη σύγκριση)        
+                String Mynhma = new String(); //μεταβλητή μηνυμάτων εμφάνισης και πληροφοριών
+                int noofpages = 0; //ο αριθμός σελίδων που θα αναζητηθούν οι ταινίες (κάθε σελίδα έχει 20 ταινίες)
+                int noofgnr = 0; //τα διαθέσιμα είδη GENRE
+                double perce = 0.0; //δεκαδικός αριθμός που βοηθάει στην πρόοδο ολοκλήρωσης διαδικασίας (ποσοστό τοις εκατό στην διεκπεραίωση)
+                int Check_Page = 0; //κάνε μετατροπή αλφαριθμητικής δήλωσης σελίδων σε ακέραια τιμή (χρήσιμο για ευκολότερη σύγκριση)       
+                boolean percen = false; //Αληθές-ψευδές μεταβλητή για υπολογισμό προόδου ολοκλήρωσης διαδικασίας ή με πλήθος σελίδας        
+                double statistica1 = 0.0; //μεταβλητή που θα υπολογίζουμε το πλήθος των ταινιών (προσωρινή μεταβλητή)
+                double statistica2 = 0.0; //μεταβλητή που συγκρατεί το πλήθος των σελίδων επί των ταινιών (προσωρινή μεταβλητή)
+                double statistica = 0.0; //υπολογισμός ποσοστού από το σύνολο των ταινιών που προσπελάθηκαν
+                String stats = new String(); //προσωρινό αλφαριθμητικό για μετατροπή δεκαδικού (ακέραιου) αριθμού σε φυσικό
+                String statsbetter = new String(); //αλφαριθμητικό που αποθηκεύει την μετατροπή ακέραιου δεκαδικού αριθμού               
+                int noofpages2 = 0; //βοηθητική μεταβλητή ανάκτησης τιμής από την φόρμα
+                int noofpages3 = 0; //βοηθητική μεταβλητή για τον υπολογισμό του ποσοστού τοις εκατό
+                int Check_Page2 = 0; //βοηθητική μεταβλητή ανάκτησης τιμής από την φόρμα 
+                int Check_Page3 = 0; //βοηθητική μεταβλητή ανάκτησης τιμής από την φόρμα
+                int counter = 0; //βοηθητική μεταβλητή για τον υπολογισμό του ποσοστού τοις εκατό       
+                int minnum = 0; //αποθήκευση του μικρότερου αριθμού
+                int chk = 0; //χειριστήριο ελέγχου για διάστημα ταινιών 1 εως 1000                                                                                                       
 
-                for (int x = 1; x <= noofpages; x++) { //εκκίνηση βρόγχου για να γίνει ανάκτηση των ταινιών στην βάση δεδομένων                 
+                if (Plirofories.isVisible()) { //αν η "θυγατρική" φορμά είναι ανοικτή
+                    Plirofories.setVisible(false); //τότε να την κλείσεις
+                } //τέλος υπόθεσης        
 
-                    URL url2 = null; //δημιούργησε αντικείμενο σύνδεσης τύπου HTTP/HTTPS/FTP
+                if (User_Found == false) { //δείκτης εκκίνησης της εφαρμογής και ελέγχου αριθμού σελίδας                           
                     try { //διαχείριση εξαιρέσων
-                        url2 = new URL("https://api.themoviedb.org/3/discover/movie?page=" + x + "&api_key=" + API_KEY); //θέσε την ιστοσελίδα του εξυπηρετητή με τις ταινίες που ψάχνουμε (και τα κριτήρια που χρειαζόμαστε επίσης)
-                    } catch (MalformedURLException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                        noofpages2 = Integer.parseInt(con01.getText()); //η συγκεκριμένη μεταβλητή μετατρέπει την αλφαριθμητική τιμή σελίδων σε ακέραια (χρήσιμο για συγκρίσεις)                        
+                        Check_Page2 = Integer.parseInt(con00.getText()); //η συγκεκριμένη μεταβλητή μετατρέπει την αλφαριθμητική τιμή σελίδων σε ακέραια (χρήσιμο για συγκρίσεις)                                                                                               
+                    } catch (NumberFormatException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                        con00.setText("1"); //θέσε εξ'ορισμού σελίδα 1
+                        con01.setText("10"); //θέσε εξ'ορισμού σελίδα 10
+                        showMessageDialog(null, "Εφόσον δεν επιλέξατε διάστημα, το εξ'ορισμού θα είναι από 1 μέχρι 10.", "ΕΝΗΜΕΡΩΣΗ", 1); //ενημέρωσε τον χρήστη                         
+                        Check_Page2 = 1; //θέσε το διάστημα εκκίνησης σελίδας
+                        noofpages2 = 10; //θέσε το διάστημα τερματισμού σελίδας
+                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης             
+                    if (Check_Page2 > 1000 || noofpages > 1000) { //αν ο χρήστης έδωσε αριθμό σελίδας πάνω από 1000 
+                        showMessageDialog(null, "Οι αριθμοί σελίδων πρέπει να είναι θετικοί ακέραιοι αριθμοί (από 1 μέχρι 1000).", "ΣΦΑΛΜΑ", 0); //ενημέρωσε τον χρήστη                         
+                        chk = 1; //θέσε χειριστήριο ελέγχου για μη συνέχεια της εφαρμογής
+                    } //τέλος υπόθεσης
+                    if (noofpages2 <= 0 && Check_Page2 <= 0) { //έλεγχος τιμών                     
+                        showMessageDialog(null, "Οι αριθμοί σελίδων πρέπει να είναι θετικοί ακέραιοι αριθμοί (από 1 μέχρι 1000).", "ΣΦΑΛΜΑ", 0); //ενημέρωσε τον χρήστη                             
+                        chk = 2; //θέσε χειριστήριο ελέγχου για μη συνέχεια της εφαρμογής   
+                    } //τέλος υπόθεσης
+                    if (chk != 1 & chk != 2 & Check_Page2 <= 1000 && noofpages <= 1000) { //αν είναι αποδεκτοί οι αριθμοί                    
+                        if (Check_Page2 >= noofpages2) { //έλεγξε αν η αρχή είναι μεγαλύτερη από το τέλος
+                            minnum = noofpages2; //προφανώς θα κάνεις "αντικατάσταση"
+                            noofpages2 = Check_Page2; //διαδικασία τροποποίησης
+                            Check_Page2 = minnum; //και σωστής ανάθεσης μικρής και μεγάλης τιμής
+                            con01.setText(String.valueOf(noofpages2)); //θέσε και τα στοιχεία της φόρμας με τις αλλαγές
+                            con00.setText(String.valueOf(Check_Page2)); //θέσε και τα στοιχεία της φόρμας με τις αλλαγές
+                            Check_Page = Check_Page2; //ανάθεσε τιμή για το ποσοστο τοις εκατό                     
+                        } //τέλος υπόθεσης
+                        if (Check_Page2 <= noofpages2) { //αν είναι σωστή η ανάθεση τιμών
+                            Check_Page = Check_Page2; //θα συνεχίσεις το πρόγραμμα κανονικά                     
+                        } //τέλος υπόθεσης
+                        User_Found = true; //συνέχισε με το υπόλοιπο τμήμα του κώδικα
+                    } //τέλος υπόθεσης              
+                } //τέλος υπόθεσης               
+
+                if (User_Found == true) { //αν ο δείκτης είναι αληθής    
+
+                    URL url95 = this.getClass().getClassLoader().getResource("myMovies/ui/metal_gong.wav"); //επέλεξε αρχείο ήχου
+                    AudioInputStream EisodosHxou_x = null; //θέσε γραμμή ήχου
+                    try { //διαχείριση εξαιρέσων
+                        EisodosHxou_x = AudioSystem.getAudioInputStream(url95); //θέσε τον οδηγό αναπαραγωγής ήχου
+                    } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
                         Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                    } //τέλος υπόθεσης διαχείρισης σφαλμάτων
-                    HttpURLConnection conct = null; //αντικείμενο ροής για τα δεδομένα JSON που θα ανακτηθούν από τον εξυπηρετητή
+                    } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης         
+                    Clip hxos_x = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
                     try { //διαχείριση εξαιρέσων
-                        conct = (HttpURLConnection) url2.openConnection(); //Ξεκίνησε σύνδεση με τον εξυπηρετητή
-                    } catch (IOException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                        hxos_x = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                    } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
                         Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
                     } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                    try { //διαχείριση εξαιρέσων                            
+                        hxos_x.open(EisodosHxou_x); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                    } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                    } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                    hxos_x.start(); //κάνε αναπαραγωγή το αρχείο ήχου                                                             
 
-                    try (InputStream is = url2.openStream(); //(με προσοχή εξαιρέσεων) άνοιξε ροή δεδομένων (=κατέβασμα) για να πάρουμε τις ταινίες
-                            JsonReader rdr2 = Json.createReader(is)) { //(με προσοχή εξαιρέσεων) τροδοδότησε μας σε μορφή JSON τις ταινίες
-                        JsonObject obj2 = rdr2.readObject(); //φτιάξε βοηθητικό αντικείμενο που διαβάζει τα δεδομένα JSON
-                        JsonArray results = obj2.getJsonArray("results"); //για καλύτερη προσπέλαση του περιεχομένου JSON, κάνε ενθυλακώσεις των δεδομένων σε δομημένο πίνακα
+                    deleteDBTable("Movie"); //σβήσε τον πίνακα ταινιών                
+                    deleteDBTable("Genre"); //σβήσε τον πίνακα ειδών που ανήκει η κάθε ταινία  
+                    deleteDBTable("FavoriteList"); //σβήσε τον πίνακα αγαπημένων ταινιών                  
 
-                        for (JsonObject result2 : results.getValuesAs(JsonObject.class)) { //ξεκίνησε βρόγχο διαβάζοντας κάθε στοιχείο του δομημένου πίνακα       
+                    JFrame parathyro = new JFrame("Ολοκλήρωση Διαδικασίας"); //Δημιούργησε το παράθυρο προόδου
+                    JProgressBar idsg = initProgressBarFrame(parathyro);
+                    parathyro.setVisible(true); //θέσε το παράθυρο εμφανές       
+                    idsg.setVisible(true); //θέσε (και) την πρόοδο ολοκλήρωσης διαδικασίας             
 
-                            //counter++; //ο μετρητής θα αυξάνει τιμή με κάθε εκτέλεση του βρόγχου
-                            conv2 = result2.getInt("id"); //αποθήκευσε το ID της ταινίας εδώ
-                            k = String.valueOf(result2.getJsonArray("genre_ids")); //Αποθήκευσε σε μορφή πίνακα, όλα τα είδη που ανήκει η εκάστοτε ταινία
-                            l = String.valueOf(result2.getJsonNumber("vote_average")); //Αποθήκευσε την βαθμολογία της εκάστοτε ταινίας    
+                    URL url = null; //θέσε αντικείμενο σύνδεσης τύπου HTTP/HTTPS
+                    try { //διαχείριση εξαιρέσεων 
+                        url = new URL("https://api.themoviedb.org/3/genre/movie/list?&api_key=" + API_KEY); //κάνε σύνδεση στον εξυπηρετητή (σε μορφή JSON) για όλα τα είδη ταινιών (genres)
+                    } catch (MalformedURLException ex) { //εφόσον υπάρξουν ζητήματα
+                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες σφάλματων εξαίρεσης
+                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
 
-                            int error_code = conct.getResponseCode(); //σε περίπτωση που ο εξυπηρετητής έχει σφάλματα, υπάρχει αυτή η μεταβλητή
+                    try (InputStream is = url.openStream(); //(με προσοχή εξαιρέσεων) τροδοδότησε μας με JSON τα είδη ταινιών (τα δεδομένα είναι σε ροή - σε κατέβασμα)
+                            JsonReader rdr = Json.createReader(is)) { //φτιάξε βοηθητικό αντικείμενο που διαβάζει τα δεδομένα JSON  
 
-                            if (error_code == 429) { //Αν δεν μπορείς να πάρεις άλλα δεδομένα
-                                showMessageDialog(null, "Σφάλμα 429 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
-                                System.exit(0); //και τελείωσε την εφαρμογή
+                        JsonObject obj = rdr.readObject(); //θέσε λειτουργική μονάδα ανάγνωσης JSON που διαβάζει τις ενθυλακώσεις του περιεχομένου JSON
+                        JsonArray results = obj.getJsonArray("genres"); //για καλύτερη προσπέλαση του περιεχομένου JSON, κάνε τις ενθυλακώσεις σε δομημένους πίνακες
+                        for (JsonObject result : results.getValuesAs(JsonObject.class)) { //ξεκίνησε βρόγχο διαβάζοντας κάθε στοιχείο του δομημένου πίνακα          
+                            conv = result.getInt("id"); //αποθήκευσε στην βοηθητική μεταβλητή τις ακέραιες τιμές των ειδών (των ταινιών)
+
+                            if (conv == 28) { //εφόσον βρήκαμε το είδος ταινίας που θέλουμε να έχει η βάση δεδομένων (28)
+                                g[0] = new Genre(); //θέσε αυτό το αντικείμενο κλάσης ενεργό                
+                                g[0].setId(28); //και αποθήκευσε σε αυτό, τον κωδικό είδους ταινίας
+                                g[0].setName(result.getString("name", "")); //αποθήκευσε επίσης σε αυτό και την περιγραφή του τύπου της ταινίας (ταινίες δράσης)      
                             } //τέλος υπόθεσης
-                            if (error_code == 500) { //Αν ο εξυπηρετητής είναι απασχολημένος (ή έχει αρκετούς χρήστες σε σύνδεση)
-                                showMessageDialog(null, "Σφάλμα 500 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
-                                System.exit(0); //και τελείωσε την εφαρμογή
-                            } //τέλος υπόθεσης
-                            if (error_code == 404) { //Αν το στοιχείο δεν μπορεί να βρεθεί για οιονδήποτε λόγο
-                                showMessageDialog(null, "Σφάλμα 404 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
-                                System.exit(0); //και τελείωσε την εφαρμογή
-                            } //τέλος υπόθεσης
-                            if (error_code == 502) { //Αν το στοιχείο δεν μπορεί να βρεθεί για οιονδήποτε λόγο
-                                showMessageDialog(null, "Σφάλμα 502 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
-                                System.exit(0); //και τελείωσε την εφαρμογή
+                            if (conv == 878) { //εφόσον βρήκαμε το είδος ταινίας που θέλουμε να έχει η βάση δεδομένων (878)
+                                g[1] = new Genre(); //θέσε αυτό το αντικείμενο κλάσης ενεργό  
+                                g[1].setId(10749); //και αποθήκευσε σε αυτό, τον κωδικό είδους ταινίας
+                                g[1].setName(result.getString("name", "")); //αποθήκευσε επίσης σε αυτό και την περιγραφή του τύπου της ταινίας (ρομαντικές ταινίες)
                             } //τέλος υπόθεσης 
-
-                            if ("".equals(l) || l == null) { //αν δεν παραλάβεις καθόλου βαθμολογία ταινίας από τον εξυπηρετητή
-                                l = "0.0"; //θέσε ίση με "0,0" την τιμή που θα αποθηκευτεί στην βάση δεδομένων (χρήσιμο σε περίπτωση που το ΣΔΒΔ παραπονεθεί για αυτό) 
-                            } //τέλος υπόθεσης       
-
-                            if (result2.getString("release_date", "") == null) { //σε περίπτωση που παραλάβεις ταινία δίχως ημερομηνία κυκλοφορίας στους κινηματογράφους
-                                ElegxosEtous = 0; //θέσε τιμή ελέγχου 0 για το έτος που θα κοιτάξουμε για το αν θα αποθηκευτεί εν τέλει η ταινία στην βάση δεδομέων (προφανώς θα απορριφθεί)
+                            if (conv == 10749) { //εφόσον βρήκαμε το είδος ταινίας που θέλουμε να έχει η βάση δεδομένων (10749)
+                                g[2] = new Genre(); //θέσε αυτό το αντικείμενο κλάσης ενεργό
+                                g[2].setId(878); //και αποθήκευσε σε αυτό, τον κωδικό είδους ταινίας
+                                g[2].setName(result.getString("name", "")); //αποθήκευσε επίσης σε αυτό και την περιγραφή του τύπου της ταινίας (επιστημονικής φαντασίας)
                             } //τέλος υπόθεσης
+                        } //τέλος βρόγχου ανάγνωσης περιεχομένου JSON
+                    } catch (IOException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                    } //ολοκλήρωσε την σύνδεση με τον εξυπηρετητή
 
-                            if (result2.getString("release_date", "").length() >= 8) { //σε περίπτωση που παραλάβεις κανονικά ημερομηνία κυκλοφορίας στους κινηματογράφους
-                                CheckYear = result2.getString("release_date", "").substring(0, 4); //πάρε μόνο το έτους (π.χ. 2002) από την ημερομηνία
-                                ElegxosEtous = Integer.parseInt(CheckYear); //και μετέτρεψε αυτό το δεδομένο από αλφαριθμητικό σε ακέραια τιμή (για ευκολότερο έλεγχο)
-                            } //τέλος υπόθεσης
+                    noofgnr = 2; //θέτουμε τα είδη ταινιών που θα γραφούν στην βάση δεδομένων               
+                    noofpages = noofpages2; //θέσε τιμές για υπολογισμό του ποσοστού στην συνέχεια
+                    Check_Page3 = (noofpages - Check_Page) + 1; //το διάστημα υπολογισμού
+                    noofpages3 = Check_Page3; //χρήσιμο για την διεκπαιρέωση του βρόγχου του JSON
 
-                            if ("".equals(CheckYear) || CheckYear == null) { //σε περίπτωση που δεν παραλάβαμε καθόλου ημερομηνία κυκλοφόριας στους κινηματογράφους
-                                ElegxosEtous = 0; //θέσε τιμή ελέγχου 0 για το έτος που θα κοιτάξουμε για το αν θα αποθηκευτεί εν τέλει η ταινία στην βάση δεδομέων (προφανώς θα απορριφθεί)
-                            } //τέλος υπόθεσης               
+                    if (noofpages3 <= 100) { //αν είμαστε στα όρια του ποσοστού τοις εκατό (%)
+                        perce = 100.0 / (double) noofpages3; //μεταβλητή υπολογισμού ποσοστού της εκατό για την πρόοδο ολοκλήρωσης διαδικασίας    
+                        idsg.setMinimum(0); //θέσε τον μικρότερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
+                        idsg.setMaximum(100); //θέσε τον μεγαλύτερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
+                        percen = true; //δείκτης για να γίνει πρόοδος ολοκλήρωσης διαδικασίας με ποσοστό τοις εκατό
+                    } //τέλος υπόθεσης
+                    if (noofpages3 > 100) { //αν δεν μπορούμε να πάρουμε όριο ποσοστού τοις εκατό, η πρόοδος ολοκλήρωσης θα γίνεται με το σύνολο των σελίδων       
+                        idsg.setMinimum(Check_Page2); //θέσε τον μικρότερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
+                        idsg.setMaximum(noofpages3); //θέσε τον μεγαλύτερο αριθμό που μπορεί να απεικονιστεί στην πρόοδο ολοκλήρωσης διαδικασίας
+                        percen = false; //δείκτης για να γίνει πρόοδος ολοκλήρωσης διαδικασίας με πλήθος σελίδων
+                    } //τέλος υπόθεσης
 
-                            if (ElegxosEtous >= 2000) { //σε περίπτωση που έχουμε έγκυρη ημερομηνία κυκλοφορίας στους κινηματογράφους (ταινίες από το 2000 και έπειτα)
-                                CorrectYear = true; //θέσε αυτό το στοιχείο ελέγχου ως έγκυρο (εγγραφή στην βάση δεδομένων)
-                            } else { //ειδάλως
-                                CorrectYear = false; //θέσε αυτό το στοιχείο ελέγχου ως άκυρο (μη εγγραφή στην βάση δεδομένων)
-                            } //τέλος εναλλακτικής υπόθεσης
+                    em.getTransaction().begin(); //ξεκίνησε νέο αίτημα λειτουργίας στην βάση δεδομένων
+                    for (int i = 0; i <= noofgnr; i++) { //εκκίνησε βρόγχο για να γράψεις τα είδη ταινιών στην βάση δεδομένων
+                        em.persist(g[i]); //και απλά γράψε αυτά τα είδη ταινιών
+                    } //τέλος βρόγχου                
 
-                            for (int w = 0; w <= k.length(); w++) { //ξεκίνησε βρόγχο για να πάρουμε το σωστό τύπο είδους μιας ταινίας
+                    for (int x = Check_Page2; x <= noofpages2; x++) { //εκκίνηση βρόγχου για να γίνει ανάκτηση των ταινιών στην βάση δεδομένων                 
 
-                                if (w == 0) { //Αν έχουμε τον πρώτο χαρακτήρα "["
-                                    w++; //απομάκρυνε τον
+                        counter++; //αύξησε την τιμή του μετρητή                    
+                        URL url2 = null; //δημιούργησε αντικείμενο σύνδεσης τύπου HTTP/HTTPS/FTP
+                        try { //διαχείριση εξαιρέσων
+                            url2 = new URL("https://api.themoviedb.org/3/discover/movie?page=" + x + "&api_key=" + API_KEY); //θέσε την ιστοσελίδα του εξυπηρετητή με τις ταινίες που ψάχνουμε (και τα κριτήρια που χρειαζόμαστε επίσης)
+                        } catch (MalformedURLException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                        } //τέλος υπόθεσης διαχείρισης σφαλμάτων
+                        HttpURLConnection conct = null; //αντικείμενο ροής για τα δεδομένα JSON που θα ανακτηθούν από τον εξυπηρετητή
+                        try { //διαχείριση εξαιρέσων
+                            conct = (HttpURLConnection) url2.openConnection(); //Ξεκίνησε σύνδεση με τον εξυπηρετητή
+                        } catch (IOException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                        } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+
+                        try (InputStream is = url2.openStream(); //(με προσοχή εξαιρέσεων) άνοιξε ροή δεδομένων (=κατέβασμα) για να πάρουμε τις ταινίες
+                                JsonReader rdr2 = Json.createReader(is)) { //(με προσοχή εξαιρέσεων) τροδοδότησε μας σε μορφή JSON τις ταινίες
+                            JsonObject obj2 = rdr2.readObject(); //φτιάξε βοηθητικό αντικείμενο που διαβάζει τα δεδομένα JSON
+                            JsonArray results = obj2.getJsonArray("results"); //για καλύτερη προσπέλαση του περιεχομένου JSON, κάνε ενθυλακώσεις των δεδομένων σε δομημένο πίνακα
+
+                            for (JsonObject result2 : results.getValuesAs(JsonObject.class)) { //ξεκίνησε βρόγχο διαβάζοντας κάθε στοιχείο του δομημένου πίνακα       
+
+                                int error_code = conct.getResponseCode(); //σε περίπτωση που ο εξυπηρετητής έχει σφάλματα, υπάρχει αυτή η μεταβλητή
+
+                                if (error_code == 429) { //Αν δεν μπορείς να πάρεις άλλα δεδομένα
+                                    showMessageDialog(null, "Σφάλμα 429 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
+                                    System.exit(0); //και τελείωσε την εφαρμογή
+                                } //τέλος υπόθεσης
+                                if (error_code == 500) { //Αν ο εξυπηρετητής είναι απασχολημένος (ή έχει αρκετούς χρήστες σε σύνδεση)
+                                    showMessageDialog(null, "Σφάλμα 500 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
+                                    System.exit(0); //και τελείωσε την εφαρμογή
+                                } //τέλος υπόθεσης
+                                if (error_code == 404) { //Αν το στοιχείο δεν μπορεί να βρεθεί για οιονδήποτε λόγο
+                                    showMessageDialog(null, "Σφάλμα 404 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
+                                    System.exit(0); //και τελείωσε την εφαρμογή
+                                } //τέλος υπόθεσης
+                                if (error_code == 502) { //Αν το στοιχείο δεν μπορεί να βρεθεί για οιονδήποτε λόγο
+                                    showMessageDialog(null, "Σφάλμα 502 του εξυπηρετητή. Παρακαλώ, δομιμάστε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //εμφάνισε αυτό το μήνυμα
+                                    System.exit(0); //και τελείωσε την εφαρμογή
+                                } //τέλος υπόθεσης 
+
+                                conv2 = result2.getInt("id"); //αποθήκευσε το ID της ταινίας εδώ
+                                k = String.valueOf(result2.getJsonArray("genre_ids")); //Αποθήκευσε σε μορφή πίνακα, όλα τα είδη που ανήκει η εκάστοτε ταινία
+                                l = String.valueOf(result2.getJsonNumber("vote_average")); //Αποθήκευσε την βαθμολογία της εκάστοτε ταινίας                             
+
+                                if ("".equals(conv2) || conv2 == 0) { //αν δεν παραλάβεις σωστά στοιχεία για το κλειδί της ταινίας
+                                    ElegxosEtous = 0; //προφανώς η συγκεκριμένη ταινία θα απορριφθεί
                                 } //τέλος υπόθεσης
 
-                                if (k.charAt(w) != ',' && w > 0) { //για όλους τους υπόλοιπους χαρακτήρες που σταματάνε στο ","
-                                    keep += k.charAt(w); //αποθήκευσε τους σε βοηθητική μεταβλητή προσωρινής αποθήκευσης
-                                } else { //ειδάλλως
-                                    check[checker] = keep; //αποθήκευσε στην βοηθητική μεταβλητή το είδος της ταινίας
-                                    checker++; //και προσαύξησε τον βοηθητικό μετρητή
-                                    keep = ""; //θέσε έτοιμη την βοηθητική μεταβλητή προσωρινής αποθήκευσης για το επόμενο διάβασμα στον βρόγχο
-                                } //τέλος εναλλακτικής υπόθεσης
+                                if ("".equals(k) || k == null) { //αν δεν παραλάβεις σωστά τα στοιχεία των ειδών που περιλαμβάνεται η ταινία
+                                    ElegxosEtous = 0; //προφανώς η συγκεκριμένη ταινία θα απορριφθεί
+                                } //τέλος υπόθεσης
 
-                                if (k.charAt(w) == ']' && w <= k.length()) { //Θέλουμε να απομακρύνουμε και το "]", οπότε, αν είμαστε σε αυτό τον χαρακτήρα
-                                    check[checker] = keep.substring(0, (keep.length() - 1)); //αποθήκευσε στην βοηθητική μεταβλητή το είδος της ταινίας
-                                    checker_rep = checker; //Εδώ αποθηκεύεται το σύνολο των εγγραφών που μεταφέραμε στον βοηθητικό πίνακα με τα είδη που ανήκει η ταινία
-                                    checker = 0; //μην προσαυξάνεις τον μετρητή. Αντιθέτως, αρχικοποίησε τον για το επόμενο διάβασμα του βρόγχου
-                                    keep = ""; //θέσε έτοιμη την βοηθητική μεταβλητή προσωρινής αποθήκευσης για το επόμενο διάβασμα στον βρόγχο
-                                    break; //διέκοψε τον τρέχοντα βρόγχο. Εξάλλου δεν θέλουμε να διαβάσει κάτι άλλο
-                                } //τέλος υπόθεσης
-                            } //τέλος βρόγχου
+                                if ("".equals(l) || l == null) { //αν δεν παραλάβεις καθόλου βαθμολογία ταινίας από τον εξυπηρετητή
+                                    l = "0.0"; //θέσε ίση με "0,0" την τιμή που θα αποθηκευτεί στην βάση δεδομένων (χρήσιμο σε περίπτωση που το ΣΔΒΔ παραπονεθεί για αυτό) 
+                                } //τέλος υπόθεσης       
 
-                            for (int w = 0; w <= checker_rep; w++) { //εκκίνηση βρόγχου για να οριστικοποιήσουμε το είδος που θα αποθηκευτεί τελικά στην βάση δεδομένων
-                                if (check[w].contains("28") || check[w].contains("10749") || check[w].contains("878")) { //αν κάποιο από τα αναφερομένα είδη της ταινίας είναι μέσα στον πίνακα
-                                    prefferable = check[w]; //αποθήκευσε το
-                                    getMovie = true; //θέσε την βοηθητική μεταβλητή να ισχύει (αληθής)
-                                    break; //μην διαβάσεις τον υπόλοιπο πίνακα αφού επιλέξαμε το πρώτο είδος που ανήκει η ταινία
+                                if (result2.getString("release_date", "") == null) { //σε περίπτωση που παραλάβεις ταινία δίχως ημερομηνία κυκλοφορίας στους κινηματογράφους
+                                    ElegxosEtous = 0; //θέσε τιμή ελέγχου 0 για το έτος που θα κοιτάξουμε για το αν θα αποθηκευτεί εν τέλει η ταινία στην βάση δεδομέων (προφανώς θα απορριφθεί)
                                 } //τέλος υπόθεσης
-                            } //τέλος βρόγχου
-                            antikatastash = result2.getString("title", "").replaceAll(REGEXP_ESC_CHARS, "");
-                            
-                            for (int w = 0; w <= (antikatastash.length() - 1); w++) { //εκκίνησε βρόγχο για να οριοθετήσουμε τους 100 πρώτους χαρακτήρες ως όνομα ταινίας στην βάση δεδομένων
-                                if (antikatastash.charAt(w) != '\'') { //απομάκρυνε τον χαρακτήρα διαφυγής και πάρε τα υπόλοιπα αλφαριθμητικά
-                                    Naming += antikatastash.charAt(w); //σε αυτή την μεταβλητή θα αποθηκευθεί το όνομα της ταινίας πριν περάσει στην βάση δεδομένων
-                                } else { //ειδάλλως
-                                    Naming += ""; //το όνομα της ταινίας δεν θα πάρει κανένα χαρακτήρα
-                                } //τέλος εναλλακτικής υπόθεσης
-                                if (w == 99) { //Αν φτάσαμε στο 100ο στοιχείο του ονόματος της ταινίας
-                                    break; //διέκοψε την εκτέλεση του βρόγχου
+
+                                if (("").equals(result2.getString("release_date", ""))) { //σε περίπτωση που παραλάβεις ταινία δίχως ημερομηνία κυκλοφορίας στους κινηματογράφους
+                                    ElegxosEtous = 0; //θέσε τιμή ελέγχου 0 για το έτος που θα κοιτάξουμε για το αν θα αποθηκευτεί εν τέλει η ταινία στην βάση δεδομέων (προφανώς θα απορριφθεί)
+                                } //τέλος υπόθεσης                           
+
+                                if (result2.getString("release_date", "").length() >= 8) { //σε περίπτωση που παραλάβεις κανονικά ημερομηνία κυκλοφορίας στους κινηματογράφους
+                                    CheckYear = result2.getString("release_date", "").substring(0, 4); //πάρε μόνο το έτους (π.χ. 2002) από την ημερομηνία
+                                    ElegxosEtous = Integer.parseInt(CheckYear); //και μετέτρεψε αυτό το δεδομένο από αλφαριθμητικό σε ακέραια τιμή (για ευκολότερο έλεγχο)
                                 } //τέλος υπόθεσης
-                            } //τέλος βρόγχου
-                            antikatastash = result2.getString("overview", "").replaceAll(REGEXP_ESC_CHARS, "");
-                            
-                            for (int w = 0; w <= (antikatastash.length() - 1); w++) { //εκκίνησε βρόγχο για να οριοθετήσουμε τους 500 πρώτους χαρακτήρες ως υπόθεση ταινίας στην βάση δεδομένων
-                                if (antikatastash.charAt(w) != '\'') { //απομάκρυνε τον χαρακτήρα διαφυγής και πάρε τα υπόλοιπα αλφαριθμητικά
-                                    CorrectSQL += antikatastash.charAt(w); //σε αυτή την μεταβλητή θα αποθηκευθεί η ουσιαστική SQL εντολή για αποθήκευση της ταινίας
+
+                                if ("".equals(CheckYear) || CheckYear == null) { //σε περίπτωση που δεν παραλάβαμε καθόλου ημερομηνία κυκλοφόριας στους κινηματογράφους
+                                    ElegxosEtous = 0; //θέσε τιμή ελέγχου 0 για το έτος που θα κοιτάξουμε για το αν θα αποθηκευτεί εν τέλει η ταινία στην βάση δεδομέων (προφανώς θα απορριφθεί)
+                                } //τέλος υπόθεσης               
+
+                                if (ElegxosEtous >= 2000) { //σε περίπτωση που έχουμε έγκυρη ημερομηνία κυκλοφορίας στους κινηματογράφους (ταινίες από το 2000 και έπειτα)
+                                    CorrectYear = true; //θέσε αυτό το στοιχείο ελέγχου ως έγκυρο (εγγραφή στην βάση δεδομένων)
                                 } else { //ειδάλως
-                                    CorrectSQL += ""; //η υπόθεση της ταινίας δεν θα πάρει κανένα χαρακτήρα
+                                    CorrectYear = false; //θέσε αυτό το στοιχείο ελέγχου ως άκυρο (μη εγγραφή στην βάση δεδομένων)
                                 } //τέλος εναλλακτικής υπόθεσης
-                                if (w == 499) { //Αν φτάσαμε στο 500ο στοιχείο της υπόθεσης της ταινίας
-                                    break; //διέκοψε την εκτέλεση του βρόγχου
-                                } //τέλος υπόθεσης
-                            } //τέλος υπόθεσης
 
-                            if ("".equals(result2.getString("overview", "")) || result2.getString("overview", "") == null) { //σε περίπτωση που δεν παραλάβουμε την υπόθεση της ταινίας       
-                                CorrectSQL = "Overview is not available - Η υπόθεση δεν είναι διαθέσιμη - El conjunto no es disponible"; //θέσε αυτό το μήνυμα που θα αποθηκευτεί στην βάση δεδομένων (αλλιώς θα γραφεί το κενό που δεν είναι ωραίο αισθητικά)
-                            } //τέλος υπόθεσης
+                                for (int w = 0; w <= k.length(); w++) { //ξεκίνησε βρόγχο για να πάρουμε το σωστό τύπο είδους μιας ταινίας
 
-                            if (getMovie == true && CorrectYear == true) { //εφόσον το είδος της ταινίας είναι αυτό που ψάχνουμε (και το έχουμε ήδη)
-                                foundsame = 0; //δεν υπάρχει ίδια ταινία και προφανώς ίδιο κλειδί ID
-                                unique_id[taken_movie] = conv2; //πίνακας που αποθηκεύει τα κλειδιά ταινιών (ID) που προσπελάσαμε ως τώρα
-                                for (int u = 0; u <= (taken_movie - 1); u++) { //Εκκίνησε βρόγχο με όλες τις ταινίες που επρόκειτο να αποθηκεύσουμε στην βάση δεδομένων
-                                    if (unique_id[taken_movie] == unique_id[u]) { //Αν έστω και ένα κλειδί στον πίνακα είναι ίδιο με το κλειδί της τρέχουσας ταινίας που εξετάζουμε μέχρι εδώ
-                                        foundsame += 1; //στην μεταβλητή δηλώνουμε διπλότυπη εμφάνιση (πράγμα που δεν είναι ιδιαίτερα καλό, και θα πρέπει να το διορθώσουμε)
-                                        getMovie = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
+                                    if (w == 0) { //Αν έχουμε τον πρώτο χαρακτήρα "["
+                                        w++; //απομάκρυνε τον
+                                    } //τέλος υπόθεσης
+
+                                    if (k.charAt(w) != ',' && w > 0) { //για όλους τους υπόλοιπους χαρακτήρες που σταματάνε στο ","
+                                        keep += k.charAt(w); //αποθήκευσε τους σε βοηθητική μεταβλητή προσωρινής αποθήκευσης
+                                    } else { //ειδάλλως
+                                        check[checker] = keep; //αποθήκευσε στην βοηθητική μεταβλητή το είδος της ταινίας
+                                        checker++; //και προσαύξησε τον βοηθητικό μετρητή
+                                        keep = ""; //θέσε έτοιμη την βοηθητική μεταβλητή προσωρινής αποθήκευσης για το επόμενο διάβασμα στον βρόγχο
+                                    } //τέλος εναλλακτικής υπόθεσης
+
+                                    if (k.charAt(w) == ']' && w <= k.length()) { //Θέλουμε να απομακρύνουμε και το "]", οπότε, αν είμαστε σε αυτό τον χαρακτήρα
+                                        check[checker] = keep.substring(0, (keep.length() - 1)); //αποθήκευσε στην βοηθητική μεταβλητή το είδος της ταινίας
+                                        checker_rep = checker; //Εδώ αποθηκεύεται το σύνολο των εγγραφών που μεταφέραμε στον βοηθητικό πίνακα με τα είδη που ανήκει η ταινία
+                                        checker = 0; //μην προσαυξάνεις τον μετρητή. Αντιθέτως, αρχικοποίησε τον για το επόμενο διάβασμα του βρόγχου
+                                        keep = ""; //θέσε έτοιμη την βοηθητική μεταβλητή προσωρινής αποθήκευσης για το επόμενο διάβασμα στον βρόγχο
+                                        break; //διέκοψε τον τρέχοντα βρόγχο. Εξάλλου δεν θέλουμε να διαβάσει κάτι άλλο
                                     } //τέλος υπόθεσης
                                 } //τέλος βρόγχου
-                                if (foundsame == 0) { //αν δεν υπάρχουν διπλότυπες (κλπ) εμφανίσεις στον πίνακα με τα κλειδιά ID ταινιών
-                                    taken_movie++; //ο αριθμός των ταινιών (προς αποθήκευση στην βάση δεδομένων) προφανώς θα προσαυξάνεται
-                                    getMovie = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
-                                    CorrectYear = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
-                                    m[taken_movie] = new Movie(); //δημιούργησε νέο αντικείμενο της βασικής POJO κλάσης MOVIE
-                                    m[taken_movie].setId(conv2); //αποθήκευσε σε αυτό το μοναδικό κλειδί που έχει η ταινία
-                                    m[taken_movie].setOverview(CorrectSQL); //αποθήκευσε την υπόθεση της ταινίας
-                                    m[taken_movie].setTitle(Naming); //αποθήκευσε τον τίτλο της ταινίας
-                                    GetMovieDate = tiempo.parse(result2.getString("release_date", "")); //κάνε μετατροπή της ημερομηνίας κυκλοφορίας στους κινηματογράφους σε αντικείμενο τύπου ημερομηνίας
-                                    m[taken_movie].setReleaseDate(GetMovieDate); //και απόθηκευσε την (ημερομηνία κυκλοφορίας στους κινηματογράφους)
-                                    m[taken_movie].setRating(Double.parseDouble(l)); //αποθήκευσε την βαθμολογία της ταινίας
-                                    if (("28").equals(prefferable)) { //αν η ταινία είναι δράσης
-                                        m[taken_movie].setGenreId(g[0]); //αποθήκευσε την τιμή του ξένου κλειδιού GENRE επίσης
+
+                                for (int w = 0; w <= checker_rep; w++) { //εκκίνηση βρόγχου για να οριστικοποιήσουμε το είδος που θα αποθηκευτεί τελικά στην βάση δεδομένων
+                                    if (check[w].contains("28") || check[w].contains("10749") || check[w].contains("878")) { //αν κάποιο από τα αναφερομένα είδη της ταινίας είναι μέσα στον πίνακα
+                                        prefferable = check[w]; //αποθήκευσε το
+                                        getMovie = true; //θέσε την βοηθητική μεταβλητή να ισχύει (αληθής)
+                                        break; //μην διαβάσεις τον υπόλοιπο πίνακα αφού επιλέξαμε το πρώτο είδος που ανήκει η ταινία
                                     } //τέλος υπόθεσης
-                                    if (("10749").equals(prefferable)) { //αν η ταινία είναι επιστημονικής φαντασίας
-                                        m[taken_movie].setGenreId(g[1]); //αποθήκευσε την τιμή του ξένου κλειδιού GENRE επίσης
+                                } //τέλος βρόγχου
+
+                                antikatastash = result2.getString("title", "").replaceAll(REGEXP_ESC_CHARS, "");
+
+                                for (int w = 0; w <= (antikatastash.length() - 1); w++) { //εκκίνησε βρόγχο για να οριοθετήσουμε τους 100 πρώτους χαρακτήρες ως όνομα ταινίας στην βάση δεδομένων
+                                    if (antikatastash.charAt(w) != '\'') { //απομάκρυνε τον χαρακτήρα διαφυγής και πάρε τα υπόλοιπα αλφαριθμητικά
+                                        Naming += antikatastash.charAt(w); //σε αυτή την μεταβλητή θα αποθηκευθεί το όνομα της ταινίας πριν περάσει στην βάση δεδομένων
+                                    } else { //ειδάλλως
+                                        Naming += ""; //το όνομα της ταινίας δεν θα πάρει κανένα χαρακτήρα
+                                    } //τέλος εναλλακτικής υπόθεσης
+                                    if (w == 99) { //Αν φτάσαμε στο 100ο στοιχείο του ονόματος της ταινίας
+                                        break; //διέκοψε την εκτέλεση του βρόγχου
                                     } //τέλος υπόθεσης
-                                    if (("878").equals(prefferable)) { //αν η ταινία είναι ρομαντική
-                                        m[taken_movie].setGenreId(g[2]); //αποθήκευσε την τιμή του ξένου κλειδιού GENRE επίσης
+                                } //τέλος βρόγχου
+                                antikatastash = result2.getString("overview", "").replaceAll(REGEXP_ESC_CHARS, "");
+
+                                for (int w = 0; w <= (antikatastash.length() - 1); w++) { //εκκίνησε βρόγχο για να οριοθετήσουμε τους 500 πρώτους χαρακτήρες ως υπόθεση ταινίας στην βάση δεδομένων
+                                    if (antikatastash.charAt(w) != '\'') { //απομάκρυνε τον χαρακτήρα διαφυγής και πάρε τα υπόλοιπα αλφαριθμητικά
+                                        CorrectSQL += antikatastash.charAt(w); //σε αυτή την μεταβλητή θα αποθηκευθεί η ουσιαστική SQL εντολή για αποθήκευση της ταινίας
+                                    } else { //ειδάλως
+                                        CorrectSQL += ""; //η υπόθεση της ταινίας δεν θα πάρει κανένα χαρακτήρα
+                                    } //τέλος εναλλακτικής υπόθεσης
+                                    if (w == 499) { //Αν φτάσαμε στο 500ο στοιχείο της υπόθεσης της ταινίας
+                                        break; //διέκοψε την εκτέλεση του βρόγχου
                                     } //τέλος υπόθεσης
                                 } //τέλος υπόθεσης
-                                if (foundsame >= 1) { //Αν υπάρχουν διπλότυπες (κλπ) εμφανίσεις στον πίνακα με τα κλειδιά ID ταινιών
-                                    taken_movie += 0; //προφανώς η τρέχουσα ταινία δεν θα ενσωματωθεί στην βάση δεδομένων (εξαιτίας του μοναδικού αναγνωριστικού ID στην δομή του πίνακα MOVIE)
-                                    getMovie = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
-                                    CorrectYear = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
+
+                                if ("".equals(result2.getString("overview", "")) || result2.getString("overview", "") == null) { //σε περίπτωση που δεν παραλάβουμε την υπόθεση της ταινίας       
+                                    CorrectSQL = "Overview is not available - Η υπόθεση δεν είναι διαθέσιμη - El conjunto no es disponible"; //θέσε αυτό το μήνυμα που θα αποθηκευτεί στην βάση δεδομένων (αλλιώς θα γραφεί το κενό που δεν είναι ωραίο αισθητικά)
                                 } //τέλος υπόθεσης
-                            } //τέλος βασικής (συλλογιστικής) υπόθεσης
-                            Naming = ""; //αρχικοποίησε το όνομα της ταινίας για το επόμενο στοιχείο του JSON
-                            CorrectSQL = ""; //αρχικοποίησε την υπόθεση της ταινίας για το επόμενο στοιχείο του JSON
-                        } // τέλος βρόγχου διαβάσματος κάθε στοιχείου JSON που μεταφέρεται με ροή (=κατέβασμα)
-                    } catch (IOException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
-                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                    } catch (ParseException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
-                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                    } //τέλος της σύνδεσης με τον εξυπηρετητή
 
-                    final int pp = noofpages; //μεταβλητή που θα χρησιμοποιηθεί σε νήμα εκτέλεσης διαδικασίας - ο αριθμός σελίδων (το σώμα της πρέπει να είναι στον τρέχοντα βρόγχο για ανάκτηση στοιχείων JSON)
-                    final int xx = x; //μεταβλητή που θα χρησιμοποιηθεί σε νήμα εκτέλεσης διαδικασίας - η τρέχουσα σελίδα (το σώμα της πρέπει να είναι στον τρέχοντα βρόγχο για ανάκτηση στοιχείων JSON)
-                    final double prc = perce; //μεταβλητή που θα χρησιμοποιηθεί σε νήμα εκτέλεσης διαδικασίας - το ποσοστό τοις εκατό (το σώμα της πρέπει να είναι στον τρέχοντα βρόγχο για ανάκτηση στοιχείων JSON)
-                    final boolean prcn = percen; //μεταβλητή αληθές/ψευδές που βοηθάει αν θα γίνεται πρόοδος ολοκλήρωσης διαδικασίας με ποσοστό τοις εκατό ή με σύνολο σελίδων
+                                if (getMovie == true && CorrectYear == true) { //εφόσον το είδος της ταινίας είναι αυτό που ψάχνουμε (και το έχουμε ήδη)
+                                    foundsame = 0; //δεν υπάρχει ίδια ταινία και προφανώς ίδιο κλειδί ID
+                                    unique_id[taken_movie] = conv2; //πίνακας που αποθηκεύει τα κλειδιά ταινιών (ID) που προσπελάσαμε ως τώρα
+                                    for (int u = 0; u <= (taken_movie - 1); u++) { //Εκκίνησε βρόγχο με όλες τις ταινίες που επρόκειτο να αποθηκεύσουμε στην βάση δεδομένων
+                                        if (unique_id[taken_movie] == unique_id[u]) { //Αν έστω και ένα κλειδί στον πίνακα είναι ίδιο με το κλειδί της τρέχουσας ταινίας που εξετάζουμε μέχρι εδώ
+                                            foundsame += 1; //στην μεταβλητή δηλώνουμε διπλότυπη εμφάνιση (πράγμα που δεν είναι ιδιαίτερα καλό, και θα πρέπει να το διορθώσουμε)
+                                            getMovie = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
+                                        } //τέλος υπόθεσης
+                                    } //τέλος βρόγχου
+                                    if (foundsame == 0) { //αν δεν υπάρχουν διπλότυπες (κλπ) εμφανίσεις στον πίνακα με τα κλειδιά ID ταινιών
+                                        taken_movie++; //ο αριθμός των ταινιών (προς αποθήκευση στην βάση δεδομένων) προφανώς θα προσαυξάνεται
+                                        getMovie = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
+                                        CorrectYear = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
+                                        m[taken_movie] = new Movie(); //δημιούργησε νέο αντικείμενο της βασικής POJO κλάσης MOVIE
+                                        m[taken_movie].setId(conv2); //αποθήκευσε σε αυτό το μοναδικό κλειδί που έχει η ταινία
+                                        m[taken_movie].setOverview(CorrectSQL); //αποθήκευσε την υπόθεση της ταινίας
+                                        m[taken_movie].setTitle(Naming); //αποθήκευσε τον τίτλο της ταινίας                                   
+                                        GetMovieDate = tiempo.parse(result2.getString("release_date", "")); //κάνε μετατροπή της ημερομηνίας κυκλοφορίας στους κινηματογράφους σε αντικείμενο τύπου ημερομηνίας
+                                        m[taken_movie].setReleaseDate(GetMovieDate); //και απόθηκευσε την (ημερομηνία κυκλοφορίας στους κινηματογράφους)
+                                        m[taken_movie].setRating(Double.parseDouble(l)); //αποθήκευσε την βαθμολογία της ταινίας
+                                        if (("28").equals(prefferable)) { //αν η ταινία είναι δράσης
+                                            m[taken_movie].setGenreId(g[0]); //αποθήκευσε την τιμή του ξένου κλειδιού GENRE επίσης
+                                        } //τέλος υπόθεσης
+                                        if (("10749").equals(prefferable)) { //αν η ταινία είναι επιστημονικής φαντασίας
+                                            m[taken_movie].setGenreId(g[1]); //αποθήκευσε την τιμή του ξένου κλειδιού GENRE επίσης
+                                        } //τέλος υπόθεσης
+                                        if (("878").equals(prefferable)) { //αν η ταινία είναι ρομαντική
+                                            m[taken_movie].setGenreId(g[2]); //αποθήκευσε την τιμή του ξένου κλειδιού GENRE επίσης
+                                        } //τέλος υπόθεσης
+                                    } //τέλος υπόθεσης
+                                    if (foundsame >= 1) { //Αν υπάρχουν διπλότυπες (κλπ) εμφανίσεις στον πίνακα με τα κλειδιά ID ταινιών
+                                        taken_movie += 0; //προφανώς η τρέχουσα ταινία δεν θα ενσωματωθεί στην βάση δεδομένων (εξαιτίας του μοναδικού αναγνωριστικού ID στην δομή του πίνακα MOVIE)
+                                        getMovie = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
+                                        CorrectYear = false; //αυτός ο δείκτης δεν είναι πλέον σε ισχύ και μας διευκολύνει για να εξετάσουμε την επόμενη προσπέλαση στοιχείου JSON
+                                    } //τέλος υπόθεσης
+                                } //τέλος βασικής (συλλογιστικής) υπόθεσης
+                                Naming = ""; //αρχικοποίησε το όνομα της ταινίας για το επόμενο στοιχείο του JSON
+                                CorrectSQL = ""; //αρχικοποίησε την υπόθεση της ταινίας για το επόμενο στοιχείο του JSON
+                            } // τέλος βρόγχου διαβάσματος κάθε στοιχείου JSON που μεταφέρεται με ροή (=κατέβασμα)
+                        } catch (IOException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                        } catch (ParseException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                        } //τέλος της σύνδεσης με τον εξυπηρετητή                    
 
-                    Runnable correir = new Runnable() { //θέσε νέο νήμα διεργασίας εκτέλεσης
-                        @Override //πάρε μερικά ορίσματα υπόψην
-                        public void run() { //θέσε λειτουργία εκτέλεσης νήματος            
-                            idsg.setStringPainted(true); //θέσε σχεδιασμό της γραμμής πρόοδου ολοκλήρωσης διαδικασίας
+                        final int pp = noofpages2; //μεταβλητή που θα χρησιμοποιηθεί σε νήμα εκτέλεσης διαδικασίας - ο αριθμός σελίδων (το σώμα της πρέπει να είναι στον τρέχοντα βρόγχο για ανάκτηση στοιχείων JSON)
+                        final int xx = x; //μεταβλητή που θα χρησιμοποιηθεί σε νήμα εκτέλεσης διαδικασίας - η τρέχουσα σελίδα (το σώμα της πρέπει να είναι στον τρέχοντα βρόγχο για ανάκτηση στοιχείων JSON)
+                        final double prc = perce; //μεταβλητή που θα χρησιμοποιηθεί σε νήμα εκτέλεσης διαδικασίας - το ποσοστό τοις εκατό (το σώμα της πρέπει να είναι στον τρέχοντα βρόγχο για ανάκτηση στοιχείων JSON)
+                        final boolean prcn = percen; //μεταβλητή αληθές/ψευδές που βοηθάει αν θα γίνεται πρόοδος ολοκλήρωσης διαδικασίας με ποσοστό τοις εκατό ή με σύνολο σελίδων
+                        final int inner_x = counter; //βοηθητική μεταβλητή υπολογισμού ποσοστού τοις εκατό 
 
-                            if (prcn == false) { //αν  υπερβαίνουμε το 100% ως ποσοστό θα κάνουμε καταμέρτηση με το πλήθος των σελίδων
-                                if (xx < pp) { //αν δεν έχουμε δει ακόμη την τελευταία σελίδα ανάκτησης ταινιών   
-                                    idsg.setString("Σελίδες: " + Integer.valueOf((int) (xx)) + " από: " + pp + "\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας   
-                                    idsg.setValue((int) (xx)); //και εμφάνισε την στον χρήστη
-                                    idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα
-                                } else { //ειδάλλως
-                                    idsg.setString("Σελίδες: " + Integer.valueOf((int) (pp)) + "\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας   
-                                    idsg.setValue((int) (pp)); //και εμφάνισε την στον χρήστη
-                                    idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα
-                                    idsg.setString("Κλείσιμο παραθύρου"); //εμφάνισε το μήνυμα ότι θα κλείσεις την πρόοδο ολοκλήρωσης διαδικασίας
+                        Runnable correir = new Runnable() { //θέσε νέο νήμα διεργασίας εκτέλεσης
+                            @Override //πάρε μερικά ορίσματα υπόψην
+                            public void run() { //θέσε λειτουργία εκτέλεσης νήματος            
+                                idsg.setStringPainted(true); //θέσε σχεδιασμό της γραμμής πρόοδου ολοκλήρωσης διαδικασίας
 
-                                    try { //διαχείριση εξαιρέσων
-                                        Thread.sleep(2500); //περίμενε λιγάκι
-                                    } catch (InterruptedException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
-                                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                                if (prcn == false) { //αν  υπερβαίνουμε το 100% ως ποσοστό θα κάνουμε καταμέρτηση με το πλήθος των σελίδων
+                                    if (xx < pp) { //αν δεν έχουμε δει ακόμη την τελευταία σελίδα ανάκτησης ταινιών   
+                                        idsg.setString("Σελίδες: " + Integer.valueOf((int) (xx)) + " από: " + pp + "\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας   
+                                        idsg.setValue((int) (xx)); //και εμφάνισε την στον χρήστη
+                                        idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα
+                                    } else { //ειδάλλως
+                                        idsg.setString("Σελίδες: " + Integer.valueOf((int) (pp)) + "\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας   
+                                        idsg.setValue((int) (pp)); //και εμφάνισε την στον χρήστη
+                                        idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα
+                                        idsg.setString("Κλείσιμο παραθύρου"); //εμφάνισε το μήνυμα ότι θα κλείσεις την πρόοδο ολοκλήρωσης διαδικασίας
 
-                                    idsg.setVisible(false); //κλείσε την πρόοδο ολοκλήρωσης διαδικασίας
-                                    parathyro.setVisible(false); //και ουσιαστικά κλείσε και το παράθυρο που διαθέτει την πρόοδο ολοκλήρωσης διαδικασίας   
-                                } //τέλος εναλλακτικής υπόθεσης
-                            } //τέλος υπόθεσης       
+                                        try { //διαχείριση εξαιρέσων
+                                            Thread.sleep(2500); //περίμενε λιγάκι
+                                        } catch (InterruptedException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                                        } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
 
-                            if (prcn == true) { //αν δεν υπερβαίνουμε το 100% ως ποσοστό 
-                                if (xx < pp) { //αν δεν έχουμε δει ακόμη την τελευταία σελίδα ανάκτησης ταινιών                           
-                                    idsg.setString("Ολοκλήρ.ποσοστού: " + Integer.valueOf((int) (xx * prc)) + "%\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας   
-                                    idsg.setValue((int) (xx * prc)); //και εμφάνισε την στον χρήστη
-                                    idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα
-                                } else { //ειδάλως 
-                                    idsg.setString("Ολοκλήρ.ποσοστού: " + String.valueOf(100) + "%\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας     
-                                    idsg.setValue(100); //και εμφάνισε την στον χρήστη
-                                    idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα 
+                                        idsg.setVisible(false); //κλείσε την πρόοδο ολοκλήρωσης διαδικασίας
+                                        parathyro.setVisible(false); //και ουσιαστικά κλείσε και το παράθυρο που διαθέτει την πρόοδο ολοκλήρωσης διαδικασίας   
+                                    } //τέλος εναλλακτικής υπόθεσης
+                                } //τέλος υπόθεσης       
 
-                                    try { //διαχείριση εξαιρέσων
-                                        Thread.sleep(1300); //περίμενε περίπου 1,3 δευτερόλεπτα
-                                    } catch (InterruptedException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
-                                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                                if (prcn == true) { //αν δεν υπερβαίνουμε το 100% ως ποσοστό 
+                                    if (xx < pp) { //αν δεν έχουμε δει ακόμη την τελευταία σελίδα ανάκτησης ταινιών                           
+                                        idsg.setString("Ολοκλήρ.ποσοστού: " + (int) (inner_x * prc) + "%\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας   
+                                        idsg.setValue((int) (inner_x * prc)); //και εμφάνισε την στον χρήστη
+                                        idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα
+                                    } else { //ειδάλως 
+                                        idsg.setString("Ολοκλήρ.ποσοστού: " + String.valueOf(100) + "%\n"); //θέσε την γραμμή προόδου ολοκλήρωσης διαδικασίας     
+                                        idsg.setValue(100); //και εμφάνισε την στον χρήστη
+                                        idsg.update(idsg.getGraphics()); //κάνε ανανέωση του περιεχομένου για το επόμενο στοιχείο (δηλαδή την αμέσως επόμενη σελίδα 
 
-                                    idsg.setString("Κλείσιμο παραθύρου"); //εμφάνισε το μήνυμα ότι θα κλείσεις την πρόοδο ολοκλήρωσης διαδικασίας
+                                        try { //διαχείριση εξαιρέσων
+                                            Thread.sleep(1300); //περίμενε περίπου 1,3 δευτερόλεπτα
+                                        } catch (InterruptedException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                                        } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
 
-                                    try { //διαχείριση εξαιρέσων
-                                        Thread.sleep(2500); //περίμενε λιγάκι
-                                    } catch (InterruptedException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
-                                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                                        idsg.setString("Κλείσιμο παραθύρου"); //εμφάνισε το μήνυμα ότι θα κλείσεις την πρόοδο ολοκλήρωσης διαδικασίας
 
-                                    idsg.setVisible(false); //κλείσε την πρόοδο ολοκλήρωσης διαδικασίας
-                                    parathyro.setVisible(false); //και ουσιαστικά κλείσε και το παράθυρο που διαθέτει την πρόοδο ολοκλήρωσης διαδικασίας   
-                                } //τέλος εναλλακτικής υπόθεσης
-                            } //Τέλος υπόθεσης
+                                        try { //διαχείριση εξαιρέσων
+                                            Thread.sleep(2500); //περίμενε λιγάκι
+                                        } catch (InterruptedException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                                        } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
 
+                                        idsg.setVisible(false); //κλείσε την πρόοδο ολοκλήρωσης διαδικασίας
+                                        parathyro.setVisible(false); //και ουσιαστικά κλείσε και το παράθυρο που διαθέτει την πρόοδο ολοκλήρωσης διαδικασίας   
+                                    } //τέλος εναλλακτικής υπόθεσης
+                                } //Τέλος υπόθεσης
+
+                                try { //διαχείριση εξαιρέσων
+                                    Thread.sleep(300); //περίμενε λιγάκι
+                                } catch (InterruptedException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                                    Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                                } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                            } //ολοκλήρωση εκτέλεσης του νήματος διεργασίας
+                        }; //ολοκλήρωση της δήλωσης εκτέλεσης νήματος διεργασίας
+                        Thread treje_diadikasia = new Thread(correir, "Code Executer"); //θέσε σε εφαρμογή το νήμα
+                        treje_diadikasia.start(); //και έπειτα ξεκίνησε το (εκτέλεση νήματος διαδικασίας)  
+
+                    } //τέλος βρόγχου με το διάβασμα σελίδων που περιέχουν τις ταινίες (σε μορφή JSON)  
+
+                    if (taken_movie >= 1) { //εφόσον έχουμε διαθέσιμες ταινίες (με μοναδικό κλειδί) 
+                        for (int i = 1; i <= (taken_movie - 1); i++) { //εκκίνηση βρόγχου για να γράψουμε όλες τις ταινίες που ανακτήσαμε στην βάση δεδομένων
+                            em.persist(m[i]); //κάνε εισαγωγή των ταινιών στην βάση δεδομένων
+                        } //τέλος βρόγχου εγγραφής ταινιών στην βάση δεδομένων
+                        em.getTransaction().commit(); //οριστικοποίησε τις εγγραφές στην βάση δεδομένων
+
+                        statistica1 = (taken_movie - 1); //το πλήθος των ταινιών
+                        statistica2 = Check_Page3 * 20; //το πλήθος της προσπέλασης
+                        statistica = (statistica1 / statistica2) * 100; //το ποσοστό ταινιών που εν τέλει προσαρτήθηκε στο ΣΔΒΔ
+                        stats = String.valueOf(statistica); //πάρε το ποσοστό σε αλφαριθμητική τιμή
+
+                        for (int z = 0; z <= (stats.length() - 1); z++) { //εκκίνησε βρόγχο για να κάνουμε την μετατροπή σε φυσικό αριθμό
+                            if (stats.charAt(z) != '.') { //για όλους τους υπόλοιπους χαρακτήρες που σταματάνε πριν στο "."
+                                statsbetter += stats.charAt(z); //αποθήκευσε τους στην μεταβλητή
+                            } else { //αν βρεθεί το κόμμα όμως
+                                break; //διέκοψε τον βρόγχο   
+                            } //τέλος εναλλακτικής υπόθεσης
+                        } //τέλος βρόγχου                                        
+                        if (taken_movie == 0 || taken_movie == 1) { //αν δεν υπάρχει καμμία ταινία για εγγραφή στην βάση δεδομένων                       
+                            Komvion0.setBackground(Color.GRAY); //θέσε χρώμα στο κουμπί της επιβεβαίωσης δεδομένων   
+                            conx0.setText("Η ανάκτηση των δεδομένων ολοκληρώθηκε."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx1.setText("Καμία ταινία δεν ενσωματώθηκε στην βάση δεδομένων."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας    
+                            conx2.setText("Δεν υπάρχουν στατιστικά στοιχεία όταν δεν υπάρχει καμία ανάκτηση ταινίας."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx3.setText("Δεν υπάρχουν στατιστικά στοιχεία όταν δεν υπάρχει καμία ανάκτηση ταινίας."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx4.setText("Δεν υπάρχουν στατιστικά στοιχεία όταν δεν υπάρχει καμία ανάκτηση ταινίας."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας    
+                            conx0.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx1.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx2.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx3.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx4.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας    
+                            Plirofories.setVisible(true); //εμφάνισε την φόρμα                            
+                        } //τέλος υπόθεσης
+                        if (taken_movie == 2) { //αν υπάρχει μια ταινία που εγγράφηκε στην βάση δεδομένων                        
+                            Komvion0.setBackground(Color.GRAY); //θέσε χρώμα στο κουμπί της επιβεβαίωσης δεδομένων   
+                            conx0.setText("Η ανάκτηση των δεδομένων ολοκληρώθηκε."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx1.setText("Μια ταινία ενσωματώθηκε στην βάση δεδομένων."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx2.setText("Σύνολο ταινιών που προσπελάθηκαν: " + (Check_Page3 * 20) + " από " + Check_Page3 + " σελίδες."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx3.setText("Προσαρτήθηκε το " + statsbetter + "% της προσπέλασης."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx4.setText("Σελίδες από: " + Check_Page2 + " μέχρι: " + noofpages); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx0.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx1.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx2.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx3.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx4.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας    
+                            Plirofories.setVisible(true); //εμφάνισε την φόρμα      
+                            URL url99 = this.getClass().getClassLoader().getResource("myMovies/ui/resultaudio.wav"); //επέλεξε αρχείο ήχου
+                            AudioInputStream EisodosHxou = null; //θέσε γραμμή ήχου
                             try { //διαχείριση εξαιρέσων
-                                Thread.sleep(300); //περίμενε λιγάκι
-                            } catch (InterruptedException ex) { //σε περίπτωση σφαλάτων εξαίρεσης
+                                EisodosHxou = AudioSystem.getAudioInputStream(url99); //θέσε τον οδηγό αναπαραγωγής ήχου
+                            } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } //τέλος υποθέσεων σφαλμάτων εξαίρεσης         
+                            Clip hxos = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
+                            try { //διαχείριση εξαιρέσων
+                                hxos = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                            } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
                                 Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
                             } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
-                        } //ολοκλήρωση εκτέλεσης του νήματος διεργασίας
-                    }; //ολοκλήρωση της δήλωσης εκτέλεσης νήματος διεργασίας
-                    Thread treje_diadikasia = new Thread(correir, "Code Executer"); //θέσε σε εφαρμογή το νήμα
-                    treje_diadikasia.start(); //και έπειτα ξεκίνησε το (εκτέλεση νήματος διαδικασίας)  
-
-                } //τέλος βρόγχου με το διάβασμα σελίδων που περιέχουν τις ταινίες (σε μορφή JSON)  
-
-                if (taken_movie >= 1) { //εφόσον έχουμε διαθέσιμες ταινίες (με μοναδικό κλειδί) 
-                    for (int i = 1; i <= (taken_movie - 1); i++) { //εκκίνηση βρόγχου για να γράψουμε όλες τις ταινίες που ανακτήσαμε στην βάση δεδομένων
-                        em.persist(m[i]); //κάνε εισαγωγή των ταινιών στην βάση δεδομένων
-                    } //τέλος βρόγχου εγγραφής ταινιών στην βάση δεδομένων
-                    em.getTransaction().commit(); //οριστικοποίησε τις εγγραφές στην βάση δεδομένων
-                    if (taken_movie == 0 || taken_movie == 1) { //αν δεν υπάρχει καμμία ταινία για εγγραφή στην βάση δεδομένων
-                        showMessageDialog(null, "Η ανάκτηση των δεδομένων ολοκληρώθηκε.\n\nΚαμία ταινία δεν ενσωματώθηκε στην βάση δεδομένων.\n", "ΕΝΗΜΕΡΩΣΗ", 1); //ενημέρωσε τον χρήστη   
-                    } //τέλος υπόθεσης
-                    if (taken_movie == 2) { //αν υπάρχει μια ταινία που εγγράφηκε στην βάση δεδομένων
-                        showMessageDialog(null, "Η ανάκτηση των δεδομένων ολοκληρώθηκε.\n\nΜία ταινία ενσωματώθηκε στην βάση δεδομένων.\nΣύνολο ταινιών που προσπελάθηκαν: " + (Check_Page * 20) + " από " + Check_Page + " σελίδες.", "ΕΝΗΜΕΡΩΣΗ", 1); //ενημέρωσε τον χρήστη 
-                    } //τέλος υπόθεσης
-                    if (taken_movie > 2) { //αν επρόκειτο για περισσότερες από μια ταινία που εγγράφηκαν στην βάση δεδομένων
-                        showMessageDialog(null, "Η ανάκτηση των δεδομένων ολοκληρώθηκε.\n\n" + (taken_movie - 1) + " ταινίες ενσωματώθηκαν στην βάση δεδομένων.\nΣύνολο ταινιών που προσπελάθηκαν: " + (Check_Page * 20) + " από " + Check_Page + " σελίδες.", "ΕΝΗΜΕΡΩΣΗ", 1); //ενημέρωσε τον χρήστη
-                    } //τέλος υπόθεσης
-                } //τέλος βασικής υπόθεσης                                                     
-
-            } catch (Exception e) { //σε περίπτωση σφαλμάτων εξαίρεσης   
-                showMessageDialog(null, "Αδύνατη η σύνδεση στην βάση δεδομένων.\n\nΠαρακαλώ, εκκινήστε το ΣΔΒΔ σας και προσπαθήστε ξανά.", "ΑΔΥΝΑΜΙΑ ΣΥΝΔΕΣΗΣ", 2); //ενημέρωσε τον χρήστη ότι δεν υπάρχει σύνδεση με το ΣΔΒΔ                     
-            } finally { //σαν επιπρόσθετο κριτήριο εξαιρέσεων   
-                if (elegxos_syndeshs != null) { //δες την περίπτωση που ουσιαστικά δεν υπάρχει καθόλου σύνδεση με το ΣΔΒΔ      
-                    try { //διαχείριση εξαιρέσων       
-                        elegxos_syndeshs.close(); //δοκίμασε να τερματίσεις ενεργή σύνδεση με το ΣΔΒΔ (σαν πιθανό στοιχείο)
-                    } catch (SQLException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
-                        Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
-                    } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
-                } //τέλος υπόθεσης   
-            } //τέλος διαχείρισης υπόθεσης σφαλμάτων                                         
-
-        } else { //ειδάλως
-            showMessageDialog(null, "Μπορείται να δοκιμάσετε αργότερα.", "ΕΝΗΜΕΡΩΣΗ", 1); //ο χρήστης μπόρει να δοκιμάσει άλλη στιγμή να κάνει ανάκτηση ταινιών
-        } //τέλος εναλλακτικής υπόθεσης                        
-
-                                                    
+                            try { //διαχείριση εξαιρέσων                            
+                                hxos.open(EisodosHxou); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                            } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                            hxos.start(); //κάνε αναπαραγωγή το αρχείο ήχου       
+                        } //τέλος υπόθεσης                    
+                        if (taken_movie > 2) { //αν επρόκειτο για περισσότερες από μια ταινία που εγγράφηκαν στην βάση δεδομένων                       
+                            Komvion0.setBackground(Color.GRAY); //θέσε χρώμα στο κουμπί της επιβεβαίωσης δεδομένων   
+                            conx0.setText("Η ανάκτηση των δεδομένων ολοκληρώθηκε."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx1.setText((taken_movie - 1) + " ταινίες ενσωματώθηκαν στην βάση δεδομένων."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx2.setText("Σύνολο ταινιών που προσπελάθηκαν: " + (Check_Page3 * 20) + " από " + Check_Page3 + " σελίδες."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx3.setText("Προσαρτήθηκε το " + statsbetter + "% της προσπέλασης."); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx4.setText("Σελίδες από: " + Check_Page2 + " μέχρι: " + noofpages); //θέσε κείμενο στο πεδίο κειμένου της φόρμας
+                            conx0.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx1.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx2.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx3.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας
+                            conx4.setEditable(false); //καμμία τροποποίηση δεν γίνεται στο πεδίο κειμένου της φόρμας    
+                            Plirofories.setVisible(true); //εμφάνισε την φόρμα     
+                            URL url99 = this.getClass().getClassLoader().getResource("myMovies/ui/resultaudio.wav"); //επέλεξε αρχείο ήχου
+                            AudioInputStream EisodosHxou = null; //θέσε γραμμή ήχου
+                            try { //διαχείριση εξαιρέσων
+                                EisodosHxou = AudioSystem.getAudioInputStream(url99); //θέσε τον οδηγό αναπαραγωγής ήχου
+                            } catch (UnsupportedAudioFileException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } //τέλος υποθέσεων σφαλμάτων εξαίρεσης        
+                            Clip hxos = null; //Θα πάρεις ένα στοιχείο πηγής ήχου
+                            try { //διαχείριση εξαιρέσων
+                                hxos = AudioSystem.getClip(); //διεύθετηση πηγής ήχου
+                            } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                            try { //διαχείριση εξαιρέσων                           
+                                hxos.open(EisodosHxou); //φόρτωσε στην μνήμη το προς αναπαραγωγή αρχείο ήχου
+                            } catch (LineUnavailableException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } catch (IOException ex) { //σε περίπτωση σφαλμάτων εξαίρεσης
+                                Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex); //εμφάνισε πληροφορίες για αυτά τα σφάλματα
+                            } //τέλος υποθέσεων σφαλμάτων εξαίρεσης
+                            hxos.start(); //κάνε αναπαραγωγή το αρχείο ήχου                  
+                        } //τέλος υπόθεσης
+                    } //τέλος βασικής υπόθεσης                                                   
+                } //τέλος εναλλακτικής υπόθεσης     
+            } //τέλος παρακολούθησης                            
+        }); //τέλος ορισμού εποπτείας            
+        //GEN-LAST:event_populateDBButtonActionPerformed                                                 
     }//GEN-LAST:event_populateDBButtonActionPerformed
 
     private void fListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fListButtonActionPerformed
-        newFListForm=new ManipulateFavorites(this);
+        newFListForm = new ManipulateFavorites(this);
         newFListForm.setVisible(true);
         setEnabled(false);
         setVisible(false);
@@ -774,30 +1560,31 @@ public class MainMenu extends javax.swing.JFrame {
         populateDBButtonActionPerformed(evt);
     }//GEN-LAST:event_populateDBMenuItemActionPerformed
 
-        
     //Μέθοδος διαγραφής στοιχείων πίνακα της ΒΔ
-    private static void deleteDBTable(String tableName){
-        List<Object> objs=em.createNamedQuery(tableName+".findAll").getResultList();
+    private static void deleteDBTable(String tableName) {
+        List<Object> objs = em.createNamedQuery(tableName + ".findAll").getResultList();
         em.getTransaction().begin();
-        for(Object o:objs){
+        for (Object o : objs) {
             em.remove(o);
         }
         em.getTransaction().commit();
     }
-    private static JProgressBar initProgressBarFrame(JFrame progressBarWindow){
+
+    private static JProgressBar initProgressBarFrame(JFrame progressBarWindow) {
         JPanel p = new JPanel(); //φτιάξε το περιεχόμενο του παραθύρου     
         JProgressBar progressBar = new JProgressBar(); //ετοίμασε και την γραμμή πρόοδου ολοκλήρωσης διαδικασίας         
         progressBarWindow.setTitle("Ολοκλήρωση Ποσοστού"); //Θέσε έναν τίτλο στο παράθυρο
         p.add(progressBar); //Κάνε προσάρτηση την πρόοδο ολοκλήρωσης διαδικασίας στο παράθυρο
-        /*Δήλωση διαστάσεων εμφάνισης μενού προόδου*/                                       
+        /*Δήλωση διαστάσεων εμφάνισης μενού προόδου*/
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenHeight = screenSize.height;
         int screnWidth = screenSize.width;
-        progressBarWindow.setSize(screnWidth/6,screenHeight/10); //θέσε διαστάσεις στο παράθυρο
-        progressBarWindow.setLocation(screnWidth/2,screenHeight/2);//Εμφάνιση στο κέντρο της οθόνης
+        progressBarWindow.setSize(screnWidth / 6, screenHeight / 10); //θέσε διαστάσεις στο παράθυρο
+        progressBarWindow.setLocation(screnWidth / 2, screenHeight / 2);//Εμφάνιση στο κέντρο της οθόνης
         progressBarWindow.add(p); //Κάνε προσάρτηση όλου του πλαισίου στο παράθυρο
         return progressBar;
     }
+
     /**
      * @param args the command line arguments
      */
@@ -867,5 +1654,5 @@ public class MainMenu extends javax.swing.JFrame {
     private MoviesSearchForm newSearchForm;
     private ManipulateFavorites newFListForm;
     private final String API_KEY = "711f75b81e3aa097074f8f0d7f069896";
-    private final String REGEXP_ESC_CHARS="[\r|\t|\n|\f|\"|'s]";
+    private final String REGEXP_ESC_CHARS = "[\r|\t|\n|\f|\"|'s]";
 }
