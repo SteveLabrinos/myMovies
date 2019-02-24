@@ -107,13 +107,15 @@ public class MovieSearchManipulation {
            "FavoriteList.findAll",FavoriteList.class).getResultList();        
         
         FavoriteList movieFavoriteList = favoriteList.get(index);
-            return movieFavoriteList;       
+        return movieFavoriteList;       
     }
     
     //Μέθοδος ανανέωσης ταινιων στη Βάση Δεδομένων
-    public static void updateMovieTabLe (){
+    public static void updateMovieTabLe (Movie movie){
         
         MainMenu.em.getTransaction().begin();
+        
+        MainMenu.em.persist(movie);
                
         MainMenu.em.getTransaction().commit();          
         
