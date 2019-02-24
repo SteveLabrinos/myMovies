@@ -342,7 +342,7 @@ public class MainMenu extends javax.swing.JFrame {
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
         int choise = JOptionPane.showConfirmDialog(new JFrame(),
                 "Η εφαρμογή θα τερματιστεί.\nΘέλετε να συνεχίσετε;", "Προειδοποιητικό Μήνυμα", JOptionPane.YES_NO_OPTION);
-        if (choise == 0) {
+        if (choise == JOptionPane.YES_OPTION) {
             dispose();
             System.exit(0);
             //  Αποδέσμευση του Entity Manager Factory και του Entity Manager
@@ -381,7 +381,7 @@ public class MainMenu extends javax.swing.JFrame {
         statisticsButtonActionPerformed(evt);
     }//GEN-LAST:event_statisticsMenuItemActionPerformed
 
-    private void populateDBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_populateDBButtonActionPerformed
+    private void populateDBButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
         JFrame Plirofories = new JFrame("ΠΛΗΡΟΦΟΡΙΕΣ"); //όρισε μια νέα φόρμα
         JPanel idsgcomx = new JPanel(new GridBagLayout()); //δημιούργησε και έναν νέο πίνακ 
         Plirofories.getContentPane().setLayout(new FlowLayout()); //θέσε πλαίσιο στην φόρμα
@@ -1546,8 +1546,8 @@ public class MainMenu extends javax.swing.JFrame {
                 } //τέλος εναλλακτικής υπόθεσης     
             } //τέλος παρακολούθησης                            
         }); //τέλος ορισμού εποπτείας            
-        //GEN-LAST:event_populateDBButtonActionPerformed                                                 
-    }//GEN-LAST:event_populateDBButtonActionPerformed
+                                                                                                         
+    }                                                
 
     private void fListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fListButtonActionPerformed
         newFListForm = new ManipulateFavorites(this);

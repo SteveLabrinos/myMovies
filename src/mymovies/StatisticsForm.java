@@ -50,8 +50,13 @@ public class StatisticsForm extends javax.swing.JFrame {
         moviesTable = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Στατιστικά Στοιχεία Ταινιών");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         headerPanel.setBackground(new java.awt.Color(204, 255, 255));
         headerPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
@@ -251,6 +256,7 @@ public class StatisticsForm extends javax.swing.JFrame {
         //Εφόσον σε μία λίστα αγαπημένων ταινιών δεν έχουν καταχωρηθεί ταινίες, αυτή αγνοείται
         if (!fLists.isEmpty()) {
             for (int i = 0; i < fLists.size(); i++) {
+                MainMenu.em.refresh(fLists.get(i));
                 List<Movie> fListMovies = fLists.get(i).getMovieList();
                 //Εφόσον υπάρχει ταινία καταχωρημένη στην αγαπημένη λίστα
                 if (!fListMovies.isEmpty()) {
@@ -291,21 +297,32 @@ public class StatisticsForm extends javax.swing.JFrame {
         int tableSize = (movies.size() < MAX_ROWS) ? movies.size() : MAX_ROWS;
         //Δημιουργία του μοντέλου του πίνακα με δύο στήλες και μηδέν γραμμές
         tableModel = new DefaultTableModel(BEST_MOVIES_COLUMNS, 0);
-        //Ταξινόμηση των ταινιών κατά φθείνουσα σειρά βαθμολογίας
-        movies.sort(Movie.compareMoviesDesc);
-        //Δημιουργία αντικειμένου τύπου Object με τις τιμές του πίνακα
+        //Σύνδεση του μοντέλου με τον πίνακα της φόρμας
+        moviesTable.setModel(tableModel);
+        
+        //Εύρεση των 10 καλύτερων ταινιών μέσω μεγίστου λόγω λιγότερης πολυπλοκότητας αλγόριθμου
         for (int i = 0; i < tableSize; i++) {
             //Ορισμός του ονόματος και της βαθμολογίας κάθε ταινίας
-            Object[] rowData = {movies.get(i).getTitle(), movies.get(i).getRating()};
+            Movie maxRatedMovie=getMaxRatedMovie(movies);
+            //Δημιουργία αντικειμένου τύπου Object με τις τιμές του πίνακα
+            Object[] rowData={maxRatedMovie.getTitle(),maxRatedMovie.getRating()};
+            //Αφαίρεση από τη λίστα ταινιών
+            movies.remove(movies.indexOf(maxRatedMovie));
             //Προσθήκη στο μοντέλο του πίνακα
             tableModel.addRow(rowData);
         }
-        //Σύνδεση του μοντέλου με τον πίνακα της φόρμας
-        moviesTable.setModel(tableModel);
         //Στοίχηση των περιεχομένων του πίνακα στο κέντρο
         setCellsAlignment(moviesTable, SwingConstants.CENTER);
         
     }//GEN-LAST:event_bestMoviesButtonActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να κλείσετε τη λειτουργία  \"Στατιστικά Στοιχεία\" ;",
+                "Προειδοποιητικό Μήνυμα",JOptionPane.YES_NO_OPTION);
+        if(dialogResult == JOptionPane.YES_OPTION){
+            homeButtonActionPerformed(null);
+        }
+    }//GEN-LAST:event_formWindowClosing
      //Μέθοδος στοίχισης δεδομένων του πίνακα στο επιθυμητό σημείο
      public static void setCellsAlignment(JTable table, int alignment){
         //Ορισμός νέου Renderer για τη στοίχιση των περιεχομένων του πίνακα

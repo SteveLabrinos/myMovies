@@ -117,7 +117,8 @@ public class MovieSearchManipulation {
         
         MainMenu.em.persist(movie);
                
-        MainMenu.em.getTransaction().commit();          
+        MainMenu.em.getTransaction().commit();
+        MainMenu.em.refresh(movie);
         
     }  
     

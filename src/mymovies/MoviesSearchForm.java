@@ -12,8 +12,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import model.FavoriteList;
 
-
-
 /**
  *
  * @author Periklis Bouzanis
@@ -46,8 +44,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     private void initComponents() {
         bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
-        em = java.beans.Beans.isDesignTime() ? null : javax.persistence.Persistence.createEntityManagerFactory("myMoviesPU").createEntityManager();
-        favoriteListQuery = java.beans.Beans.isDesignTime() ? null : em.createQuery("SELECT f.name FROM FavoriteList f");
+        favoriteListQuery = java.beans.Beans.isDesignTime() ? null : MainMenu.em.createQuery("SELECT f.name FROM FavoriteList f");
         favoriteListList = java.beans.Beans.isDesignTime() ? java.util.Collections.emptyList() : favoriteListQuery.getResultList();
         movieTypeLabel = new javax.swing.JLabel();
         movieTypeComboBox = new javax.swing.JComboBox<>();
@@ -69,6 +66,7 @@ public class MoviesSearchForm extends javax.swing.JFrame {
         selectedMovieInfo = new javax.swing.JLabel();
         buttonAddToFavList = new javax.swing.JButton();
 
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Αναζήτηση Ταινιών");
 
         org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, this, org.jdesktop.beansbinding.ELProperty.create("${defaultCloseOperation}"), this, org.jdesktop.beansbinding.BeanProperty.create("defaultCloseOperation"));
@@ -692,7 +690,6 @@ public class MoviesSearchForm extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel addToListLabel;
     private javax.swing.JButton buttonAddToFavList;
-    private javax.persistence.EntityManager em;
     private javax.swing.JComboBox<String> favoriteListComboBox;
     private java.util.List<model.FavoriteList> favoriteListList;
     private javax.persistence.Query favoriteListQuery;
