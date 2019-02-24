@@ -2,6 +2,7 @@ package mymovies;
 
 import java.awt.Component;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -29,7 +30,8 @@ public class ManipulateFavorites extends javax.swing.JFrame {
      */
     private MainMenu parent;
     private Query _qGetFavLists;
-    private Query _moviesQuery;
+    List<FavoriteList> favoriteLists = new ArrayList<>();
+//    private Query _moviesQuery;
     public ManipulateFavorites(MainMenu parent) {
         this.parent=parent;
         initComponents();
@@ -37,20 +39,31 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         populateFavListTable();
     }
     
-    private void populateMovieTable(){
+    /**
+     * μέθοδος που γεμίζει τον πίνακα Movies με τις ταινίες της
+     * επιλεγμένης λίστας αγαπημένων
+     * @param favListID 
+     */
+    private void populateMovieTable(Integer favListID){
         Object[] moviesCols = new Object[] {"Rating","Overview","Release Date","Title","Id"};
         DefaultTableModel tm;
+        FavoriteList theSelectedList = favoriteLists.stream()
+                .filter(l -> l.getId().equals(favListID))
+                .findFirst()
+                .orElse(null);
         
         tm = new DefaultTableModel(moviesCols, 0); 
-        for (Object movie : _moviesQuery.getResultList()) {
-            tm.addRow(new Object[] 
-            {                 
-                ((Movie)movie).getRating(),
-                ((Movie)movie).getOverview(),
-                ((Movie)movie).getReleaseDate(),
-                ((Movie)movie).getTitle(),
-                ((Movie)movie).getId()
-            });
+        if(theSelectedList != null){
+            for (Object movie : theSelectedList.getMovieList()) {
+                tm.addRow(new Object[] 
+                {                 
+                    ((Movie)movie).getRating(),
+                    ((Movie)movie).getOverview(),
+                    ((Movie)movie).getReleaseDate(),
+                    ((Movie)movie).getTitle(),
+                    ((Movie)movie).getId()
+                });
+            }
         }
         moviesTable.setModel(tm);
         
@@ -93,16 +106,28 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         moviesTable.getColumnModel().getColumn(2).setCellRenderer(tableCellRenderer);
     }
     
+    /**
+     * Γεμίζει τον πίνακα των λιστών με τις αγαπημένες ταινίες.
+     */
     private void populateFavListTable() {
         // Create Tables
         Object[] favListCols = new Object[] {"Id","Name"};
         DefaultTableModel tm;
         
-        // Load Tables
+        // Δημιουργούνται οι στήλες του πίνακα moviesTable
         tm = new DefaultTableModel(favListCols, 0); 
-        _qGetFavLists = MainMenu.em.createNamedQuery("FavoriteList.findAll");
+        
+        // Τρέχει το query για την ανάκτηση όλων των λιστών από τη βάση...
+        _qGetFavLists = MainMenu.em.createNamedQuery("FavoriteList.findAll", FavoriteList.class);
+        
+        // ...και οι λίστες φορτώνοντε μια προς μια στον πίνακα
+        favoriteLists.clear();
         for (Object lstFav : _qGetFavLists.getResultList()) {
             tm.addRow(new Object[] {((FavoriteList)lstFav).getId(), ((FavoriteList)lstFav).getName()});
+            // Βάζει στη λίστα όλα τα αντικείμενα
+            // τύπου FavoriteList για χρήση από την populateMovieTable
+            MainMenu.em.refresh(lstFav); // Refresh the Entity Object
+            favoriteLists.add((FavoriteList)lstFav);  
         }
         favListsTable.setModel(tm);
         
@@ -236,16 +261,17 @@ public class ManipulateFavorites extends javax.swing.JFrame {
                         .addComponent(btnDelete))
                     .addComponent(favListsTableScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(moviesTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
+                .addComponent(moviesTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE))
         );
 
         panelBottom.setMinimumSize(new java.awt.Dimension(100, 50));
         panelBottom.setPreferredSize(new java.awt.Dimension(790, 50));
 
         exitButton.setBackground(new java.awt.Color(204, 255, 255));
-        exitButton.setText("<html><span style=\"font-size:18px;\">Επιστροφή</span></html>");
+        exitButton.setText("<html><span style=\"font-size:15px;\">Επιστροφή στο Κεντρικό Μενού</span></html>");
         exitButton.setToolTipText("Συντόμευση πλήκτρου: Esc");
-        exitButton.setPreferredSize(new java.awt.Dimension(470, 33));
+        exitButton.setMargin(new java.awt.Insets(10, 10, 10, 10));
+        exitButton.setPreferredSize(new java.awt.Dimension(430, 33));
         exitButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitButtonActionPerformed(evt);
@@ -256,20 +282,23 @@ public class ManipulateFavorites extends javax.swing.JFrame {
         panelBottom.setLayout(panelBottomLayout);
         panelBottomLayout.setHorizontalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 1562, Short.MAX_VALUE)
             .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(exitButton, javax.swing.GroupLayout.DEFAULT_SIZE, 790, Short.MAX_VALUE))
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBottomLayout.createSequentialGroup()
+                    .addContainerGap(476, Short.MAX_VALUE)
+                    .addComponent(exitButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(350, 350, 350)))
         );
         panelBottomLayout.setVerticalGroup(
             panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 50, Short.MAX_VALUE)
             .addGroup(panelBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(exitButton, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE))
+                .addComponent(exitButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         panelInfo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Πληροφορίες", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 18), new java.awt.Color(0, 51, 255))); // NOI18N
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 15)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel2.setText("<html> <p>Με τη λειτουργία αυτή παρέχεται η δυνατότητα προβολής και διαχείρισης των λιστών αγαπημένων ταινιών. </li> <li> Με το πλήκτρο <span style=\"color:blue;\"><b>Δημιουργία </span>, καταχωρείται νέα λίστα αγαπημένων </li> <li> Με το πλήκτρο <span style=\"color:blue;\"><b>Επεξεργασία</span>, δίνεται η δυνατότητα μετονομασίας μιας λίστας </li> <li> Με το πλήκτρο <span style=\"color:blue;\"><b>Διαγραφή </span>, διαγράφεται μία ή και περισσότερες λίστες");
         jLabel2.setToolTipText("");
         jLabel2.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -308,7 +337,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                .addComponent(panelMain, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelBottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -321,12 +350,8 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         
     }//GEN-LAST:event_formInternalFrameClosed
-
+    
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
-        int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να κλείσετε τη λειτουργία  'Διαχείριση Λιστών Αγαπημένων Ταινιών' ?","ΠΡΟΣΟΧΗ !!!",JOptionPane.YES_NO_OPTION);
-        if(dialogResult == JOptionPane.NO_OPTION){
-            return;
-        }
         parent.setEnabled(true);
         parent.setVisible(true);
         this.dispose();
@@ -341,10 +366,9 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             // Enable deletions button when at least on row is selected.
             btnDelete.setEnabled(favListsTable.getSelectedRows().length >= 1);
 
-            // Load movies.
-            _moviesQuery = MainMenu.em.createNamedQuery("Movie.findByFavListId");
-            _moviesQuery.setParameter("favlistid", Integer.parseInt(favListsTable.getModel().getValueAt(favListsTable.getSelectedRows()[0], 0).toString()));
-            populateMovieTable();
+            // Καλείται η παρακάτω μέθοδος με παράμετρο
+            // το ID της επιλεγμένης λίστας
+            populateMovieTable(Integer.parseInt(favListsTable.getModel().getValueAt(favListsTable.getSelectedRows()[0], 0).toString()));
         }
         catch(Exception ex){
             JOptionPane.showMessageDialog(null, "Exception occur" + ex.getMessage());
@@ -437,6 +461,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             msgBox.setModal(true);
             msgBox.setVisible(true);
 
+            // Επιβεβαιώνουμε ότι ο χρήστης θέλει όντως να δημιουργήσει τη λίστα
             if(msgBox.getPreDefMessage().trim().equals("") &&
                 msgBox.getUserButtonSelection()==TitleMessageBox.ButtonPressed.AcceptButtonPressed){
                 JOptionPane.showMessageDialog(null, "Δεν μπορείτε να αποθηκεύσετε λίστα αγαπημένων με κενό όνομα.");
@@ -446,6 +471,7 @@ public class ManipulateFavorites extends javax.swing.JFrame {
             if(msgBox.getUserButtonSelection()==TitleMessageBox.ButtonPressed.CancelButtonPressed)
             return;
 
+            // Η λίστα δημιουργήται στη ΒΔ
             FavoriteList favList = new FavoriteList(msgBox.getPreDefMessage().trim());
             tx.begin();            
             MainMenu.em.persist(favList);
@@ -459,6 +485,10 @@ public class ManipulateFavorites extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        int dialogResult = JOptionPane.showConfirmDialog (null, "Θέλετε να κλείσετε τη λειτουργία  'Διαχείριση Λιστών Αγαπημένων Ταινιών' ?","ΠΡΟΣΟΧΗ !!!",JOptionPane.YES_NO_OPTION);
+        if(dialogResult == JOptionPane.NO_OPTION){
+            return;
+        }
         exitButtonActionPerformed(null);
     }//GEN-LAST:event_formWindowClosing
 
