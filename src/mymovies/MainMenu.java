@@ -235,6 +235,11 @@ public class MainMenu extends javax.swing.JFrame {
 
         populateDBMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
         populateDBMenuItem.setText("<html><span style=\"font-size:15px;\">1. Ανάκτηση και Αποθήκευση Δεδομένων Ταινιών</span></html>");
+        populateDBMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                populateDBMenuItemActionPerformed(evt);
+            }
+        });
         jMenu1.add(populateDBMenuItem);
 
         fListMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F2, 0));
@@ -417,6 +422,7 @@ public class MainMenu extends javax.swing.JFrame {
                 //Διαγραφή του κάθε πίνακα της ΒΔ εκτός των λιστών αγαπημένων ταινιών
                 deleteDBTable("Movie");
                 deleteDBTable("Genre");
+                deleteDBTable("FavoriteList");
                 
                 parathyro.setVisible(true); //θέσε το παράθυρο εμφανές       
                 idsg.setVisible(true); //θέσε (και) την πρόοδο ολοκλήρωσης διαδικασίας             
@@ -763,6 +769,10 @@ public class MainMenu extends javax.swing.JFrame {
         setEnabled(false);
         setVisible(false);
     }//GEN-LAST:event_fListButtonActionPerformed
+
+    private void populateDBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_populateDBMenuItemActionPerformed
+        populateDBButtonActionPerformed(evt);
+    }//GEN-LAST:event_populateDBMenuItemActionPerformed
 
         
     //Μέθοδος διαγραφής στοιχείων πίνακα της ΒΔ
